@@ -29,14 +29,10 @@ impl ImportResolver for PythonImportResolver {
         let resolved =
             Python::with_gil(
                 |py| match self.callback.call(py, (from_str, path_str), None) {
-                    Ok(obj) => {
-                        if let Ok((resolved, _content)) = obj.extract::<(String, Option<&str>)>(py)
-                        {
-                            Ok(resolved)
-                        } else {
-                            Err(ImportFileNotFound(from.clone(), path.clone()))
-                        }
-                    }
+                    Ok(obj) => obj
+                        .extract::<(String, Option<&str>)>(py)
+                        .map(|(resolved, _content)| resolved)
+                        .map_err(|_e| ImportFileNotFound(from.clone(), path.clone())),
                     Err(_) => Err(ImportFileNotFound(from.clone(), path.clone())),
                 },
             )?;
