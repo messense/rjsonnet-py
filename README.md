@@ -13,8 +13,13 @@ pip install rjsonnet
 
 ## Usage
 
-The Python module provides two functions, `evaluate_file(filename)` and `evaluate_snippet(filename, src)`.
-In the latter case, the parameter `filename` is used in stack traces, because all errors are given with the "filename" containing the code.
+This module provides two functions:
+
+1. `def evaluate_file(filename: str) -> str: ...`
+2. `def evaluate_snippet(filename: str, src: str) -> str: ...`
+
+In the latter case, the parameter `filename` is used in stack traces,
+because all errors are given with the "filename" containing the code.
 
 Keyword arguments to these functions are used to control the virtual machine. They are:
 
@@ -26,8 +31,8 @@ Keyword arguments to these functions are used to control the virtual machine. Th
 * `tla_vars`   (dict string to string)
 * `tla_codes`   (dict string to string)
 * `max_trace`   (number)
-* `import_callback`   (see example in tests/)
-* `native_callbacks`   (see example in tests/)
+* `import_callback`   (see example in [tests/](./tests/))
+* `native_callbacks`   (see example in [tests/](./tests/))
 
 The argument `import_callback` can be used to pass a callable, to trap the Jsonnet `import` and `importstr` constructs.
 This allows, e.g., reading files out of archives or implementing library search paths.
