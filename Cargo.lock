@@ -358,6 +358,7 @@ name = "rjsonnet"
 version = "0.1.0"
 dependencies = [
  "jrsonnet-evaluator",
+ "jrsonnet-interner",
  "pyo3",
 ]
 

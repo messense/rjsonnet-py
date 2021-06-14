@@ -16,4 +16,5 @@ crate-type = ["cdylib"]
 
 [dependencies]
 jrsonnet-evaluator = "0.3.8"
+jrsonnet-interner = "0.3.8"
 pyo3 = { version = "0.13.2", features = ["abi3-py36", "extension-module"] }

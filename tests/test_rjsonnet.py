@@ -1,4 +1,14 @@
+import os
+
 import rjsonnet
+
+
+def test_evaluate_file():
+    def import_callback(dir, rel):
+        current_dir = os.path.abspath(os.path.dirname(__file__))
+        return os.path.join(current_dir, rel), None
+
+    assert rjsonnet.evaluate_file("test.jsonnet", import_callback=import_callback)
 
 
 def test_evaluate_snippet():
