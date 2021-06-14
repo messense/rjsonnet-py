@@ -145,24 +145,24 @@ fn create_evaluation_state(
     import_callback: Option<PyObject>,
     native_callbacks: HashMap<String, (PyObject, PyObject)>,
 ) -> PyResult<EvaluationState> {
-    let state = EvaluationState::default();
-    state.set_max_stack(max_stack);
-    state.set_max_trace(max_trace);
+    let vm = EvaluationState::default();
+    vm.set_max_stack(max_stack);
+    vm.set_max_trace(max_trace);
     for (k, v) in ext_vars.into_iter() {
-        state.add_ext_str(k.into(), v.into());
+        vm.add_ext_str(k.into(), v.into());
     }
     for (k, v) in ext_codes.into_iter() {
-        state
-            .add_ext_code(k.into(), v.into())
-            .map_err(|e| PyRuntimeError::new_err(format!("add_ext_code error: {:?}", e)))?;
+        vm.add_ext_code(k.into(), v.into()).map_err(|e| {
+            PyRuntimeError::new_err(format!("add_ext_code error: {}", vm.stringify_err(&e)))
+        })?;
     }
     for (k, v) in tla_vars.into_iter() {
-        state.add_tla_str(k.into(), v.into());
+        vm.add_tla_str(k.into(), v.into());
     }
     for (k, v) in tla_codes.into_iter() {
-        state
-            .add_tla_code(k.into(), v.into())
-            .map_err(|e| PyRuntimeError::new_err(format!("add_tla_code error: {:?}", e)))?;
+        vm.add_tla_code(k.into(), v.into()).map_err(|e| {
+            PyRuntimeError::new_err(format!("add_tla_code error: {}", vm.stringify_err(&e)))
+        })?;
     }
 
     if let Some(import_callback) = import_callback {
@@ -173,12 +173,12 @@ fn create_evaluation_state(
             callback: import_callback,
             out: RefCell::new(HashMap::new()),
         };
-        state.set_import_resolver(Box::new(import_resolver));
+        vm.set_import_resolver(Box::new(import_resolver));
     } else if let Some(jpathdir) = jpathdir {
         let import_resolver = FileImportResolver {
             library_paths: jpathdir,
         };
-        state.set_import_resolver(Box::new(import_resolver));
+        vm.set_import_resolver(Box::new(import_resolver));
     }
 
     for (name, (args, func)) in native_callbacks.into_iter() {
@@ -189,7 +189,7 @@ fn create_evaluation_state(
             params.push(Param(param.into(), None));
         }
         let params = ParamsDesc(Rc::new(params));
-        state.add_native(
+        vm.add_native(
             name.clone().into(),
             Rc::new(NativeCallback::new(params, move |_caller, args| {
                 Python::with_gil(|py| {
@@ -210,7 +210,7 @@ fn create_evaluation_state(
             })),
         );
     }
-    Ok(state)
+    Ok(vm)
 }
 
 #[derive(FromPyObject)]
@@ -277,7 +277,9 @@ fn evaluate_file(
         .evaluate_file_raw_nocwd(&path)
         .and_then(|v| vm.with_tla(v))
         .and_then(|v| vm.manifest(v))
-        .map_err(|e| PyRuntimeError::new_err(format!("evaluate_file error: {:?}", e)))?;
+        .map_err(|e| {
+            PyRuntimeError::new_err(format!("evaluate_file error: {}", vm.stringify_err(&e)))
+        })?;
     Ok(result.to_string())
 }
 
@@ -331,7 +333,9 @@ fn evaluate_snippet(
         .evaluate_snippet_raw(Rc::new(path), src.into())
         .and_then(|v| vm.with_tla(v))
         .and_then(|v| vm.manifest(v))
-        .map_err(|e| PyRuntimeError::new_err(format!("evaluate_snippet error: {:?}", e)))?;
+        .map_err(|e| {
+            PyRuntimeError::new_err(format!("evaluate_snippet error: {}", vm.stringify_err(&e)))
+        })?;
     Ok(result.to_string())
 }
 
