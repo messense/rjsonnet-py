@@ -266,7 +266,7 @@ fn evaluate_file(
 fn evaluate_snippet(
     py: Python,
     filename: &str,
-    expr: &str,
+    src: &str,
     jpathdir: Option<&str>,
     max_stack: usize,
     #[allow(unused_variables)] gc_min_objects: usize,
@@ -295,7 +295,7 @@ fn evaluate_snippet(
 
     let result = state
         .with_stdlib()
-        .evaluate_snippet_raw(Rc::new(path), expr.into())
+        .evaluate_snippet_raw(Rc::new(path), src.into())
         .map_err(|e| PyRuntimeError::new_err(format!("evaluate_snippet error: {:?}", e)))?;
     Ok(val_to_pyobject(py, &result))
 }
