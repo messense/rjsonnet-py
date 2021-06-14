@@ -152,17 +152,15 @@ fn create_evaluation_state(
         vm.add_ext_str(k.into(), v.into());
     }
     for (k, v) in ext_codes.into_iter() {
-        vm.add_ext_code(k.into(), v.into()).map_err(|e| {
-            PyRuntimeError::new_err(format!("add_ext_code error: {}", vm.stringify_err(&e)))
-        })?;
+        vm.add_ext_code(k.into(), v.into())
+            .map_err(|e| PyRuntimeError::new_err(vm.stringify_err(&e)))?;
     }
     for (k, v) in tla_vars.into_iter() {
         vm.add_tla_str(k.into(), v.into());
     }
     for (k, v) in tla_codes.into_iter() {
-        vm.add_tla_code(k.into(), v.into()).map_err(|e| {
-            PyRuntimeError::new_err(format!("add_tla_code error: {}", vm.stringify_err(&e)))
-        })?;
+        vm.add_tla_code(k.into(), v.into())
+            .map_err(|e| PyRuntimeError::new_err(vm.stringify_err(&e)))?;
     }
 
     if let Some(import_callback) = import_callback {
@@ -277,9 +275,7 @@ fn evaluate_file(
         .evaluate_file_raw_nocwd(&path)
         .and_then(|v| vm.with_tla(v))
         .and_then(|v| vm.manifest(v))
-        .map_err(|e| {
-            PyRuntimeError::new_err(format!("evaluate_file error: {}", vm.stringify_err(&e)))
-        })?;
+        .map_err(|e| PyRuntimeError::new_err(vm.stringify_err(&e)))?;
     Ok(result.to_string())
 }
 
@@ -333,9 +329,7 @@ fn evaluate_snippet(
         .evaluate_snippet_raw(Rc::new(path), src.into())
         .and_then(|v| vm.with_tla(v))
         .and_then(|v| vm.manifest(v))
-        .map_err(|e| {
-            PyRuntimeError::new_err(format!("evaluate_snippet error: {}", vm.stringify_err(&e)))
-        })?;
+        .map_err(|e| PyRuntimeError::new_err(vm.stringify_err(&e)))?;
     Ok(result.to_string())
 }
 
