@@ -166,6 +166,9 @@ fn create_evaluation_state(
     }
 
     if let Some(import_callback) = import_callback {
+        if !import_callback.as_ref(py).is_callable() {
+            return Err(PyTypeError::new_err("import_callback must be callable"));
+        }
         let import_resolver = PythonImportResolver {
             callback: import_callback,
             out: RefCell::new(HashMap::new()),
