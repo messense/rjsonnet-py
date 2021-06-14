@@ -6,6 +6,7 @@ use std::rc::Rc;
 
 use jrsonnet_evaluator::{EvaluationState, ImportResolver, Val};
 use jrsonnet_interner::IStr;
+use pyo3::exceptions::PyNotImplementedError;
 use pyo3::prelude::*;
 use pyo3::types::{PyDict, PyList};
 use pyo3::wrap_pyfunction;
@@ -83,12 +84,19 @@ fn val_to_pyobject(py: Python, val: Val) -> PyObject {
     }
 }
 
-#[pyfunction(import_callback = "None")]
+#[pyfunction(import_callback = "None", native_callbacks = "None")]
 fn evaluate_file(
     py: Python,
     filename: &str,
     import_callback: Option<PyObject>,
+    native_callbacks: Option<&PyDict>,
 ) -> PyResult<PyObject> {
+    if native_callbacks.is_some() {
+        return Err(PyNotImplementedError::new_err(
+            "native_callbacks not implemented yet",
+        ));
+    }
+
     let path = PathBuf::from(filename);
     let state = EvaluationState::default();
 
@@ -103,13 +111,20 @@ fn evaluate_file(
     Ok(val_to_pyobject(py, result))
 }
 
-#[pyfunction(import_callback = "None")]
+#[pyfunction(import_callback = "None", native_callbacks = "None")]
 fn evaluate_snippet(
     py: Python,
     filename: &str,
     expr: &str,
     import_callback: Option<PyObject>,
+    native_callbacks: Option<&PyDict>,
 ) -> PyResult<PyObject> {
+    if native_callbacks.is_some() {
+        return Err(PyNotImplementedError::new_err(
+            "native_callbacks not implemented yet",
+        ));
+    }
+
     let path = PathBuf::from(filename);
     let state = EvaluationState::default();
 
