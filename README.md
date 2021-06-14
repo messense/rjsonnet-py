@@ -13,6 +13,30 @@ pip install rjsonnet
 
 ## Usage
 
+The Python module provides two functions, `evaluate_file(filename)` and `evaluate_snippet(filename, src)`.
+In the latter case, the parameter `filename` is used in stack traces, because all errors are given with the "filename" containing the code.
+
+Keyword arguments to these functions are used to control the virtual machine. They are:
+
+* `max_stack`   (number)
+* `gc_min_objects`   (number, ignored)
+* `gc_growth_trigger`   (number, ignored)
+* `ext_vars`   (dict: string to string)
+* `ext_codes`   (dict string to string)
+* `tla_vars`   (dict string to string)
+* `tla_codes`   (dict string to string)
+* `max_trace`   (number)
+* `import_callback`   (see example in tests/)
+* `native_callbacks`   (see example in tests/)
+
+The argument `import_callback` can be used to pass a callable, to trap the Jsonnet `import` and `importstr` constructs.
+This allows, e.g., reading files out of archives or implementing library search paths.
+
+The argument `native_callback` is used to allow execution of arbitrary Python code via `std.native(...)`.
+This is useful so Jsonnet code can access pure functions in the Python ecosystem, such as compression, encryption, encoding, etc.
+
+If an error is raised during the evaluation of the Jsonnet code, it is formed into a stack trace and thrown as a python `RuntimeError`.
+
 ```python
 import rjsonnet
 
