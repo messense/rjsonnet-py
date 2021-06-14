@@ -81,10 +81,17 @@ fn val_to_pyobject(py: Python, val: Val) -> PyObject {
 }
 
 /// Evaluate jsonnet file
-#[pyfunction(import_callback = "None", native_callbacks = "None")]
+#[pyfunction(
+    max_stack = "500",
+    max_trace = "20",
+    import_callback = "None",
+    native_callbacks = "None"
+)]
 fn evaluate_file(
     py: Python,
     filename: &str,
+    max_stack: usize,
+    max_trace: usize,
     import_callback: Option<PyObject>,
     native_callbacks: Option<&PyDict>,
 ) -> PyResult<PyObject> {
@@ -96,6 +103,8 @@ fn evaluate_file(
 
     let path = PathBuf::from(filename);
     let state = EvaluationState::default();
+    state.set_max_stack(max_stack);
+    state.set_max_trace(max_trace);
 
     if let Some(import_callback) = import_callback {
         let import_resolver = PythonImportResolver {
@@ -109,11 +118,18 @@ fn evaluate_file(
 }
 
 /// Evaluate jsonnet code snippet
-#[pyfunction(import_callback = "None", native_callbacks = "None")]
+#[pyfunction(
+    max_stack = "500",
+    max_trace = "20",
+    import_callback = "None",
+    native_callbacks = "None"
+)]
 fn evaluate_snippet(
     py: Python,
     filename: &str,
     expr: &str,
+    max_stack: usize,
+    max_trace: usize,
     import_callback: Option<PyObject>,
     native_callbacks: Option<&PyDict>,
 ) -> PyResult<PyObject> {
@@ -125,6 +141,8 @@ fn evaluate_snippet(
 
     let path = PathBuf::from(filename);
     let state = EvaluationState::default();
+    state.set_max_stack(max_stack);
+    state.set_max_trace(max_trace);
 
     if let Some(import_callback) = import_callback {
         let import_resolver = PythonImportResolver {
