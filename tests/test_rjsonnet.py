@@ -3,14 +3,41 @@ import os
 import rjsonnet
 
 
-def test_evaluate_file():
-    def import_callback(dir, rel):
-        current_dir = os.path.abspath(os.path.dirname(__file__))
-        path = os.path.join(current_dir, rel)
-        with open(path, "r") as f:
-            return path, f.read()
+def import_callback(dir, rel):
+    current_dir = os.path.abspath(os.path.dirname(__file__))
+    path = os.path.join(current_dir, rel)
+    with open(path, "r") as f:
+        return path, f.read()
 
-    assert rjsonnet.evaluate_file("test.jsonnet", import_callback=import_callback)
+
+# Test native extensions
+def concat(a, b):
+    return a + b
+
+
+def return_types():
+    return {
+        "a": [1, 2, 3, None, []],
+        "b": 1.0,
+        "c": True,
+        "d": None,
+        "e": {"x": 1, "y": 2, "z": ["foo"]},
+    }
+
+
+native_callbacks = {
+    "concat": (("a", "b"), concat),
+    "return_types": ((), return_types),
+}
+
+
+def test_evaluate_file():
+
+    assert rjsonnet.evaluate_file(
+        "test.jsonnet",
+        import_callback=import_callback,
+        native_callbacks=native_callbacks,
+    )
 
 
 def test_evaluate_snippet():

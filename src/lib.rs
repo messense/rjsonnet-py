@@ -4,11 +4,15 @@ use std::collections::HashMap;
 use std::path::PathBuf;
 use std::rc::Rc;
 
-use jrsonnet_evaluator::{EvaluationState, ImportResolver, Val};
+use jrsonnet_evaluator::native::NativeCallback;
+use jrsonnet_evaluator::{
+    ArrValue, EvaluationState, ImportResolver, LazyBinding, LazyVal, ObjMember, ObjValue, Val,
+};
 use jrsonnet_interner::IStr;
-use pyo3::exceptions::{PyNotImplementedError, PyRuntimeError};
+use jrsonnet_parser::{Param, ParamsDesc, Visibility};
+use pyo3::exceptions::{PyRuntimeError, PyTypeError};
 use pyo3::prelude::*;
-use pyo3::types::{PyDict, PyList};
+use pyo3::types::{PyBool, PyDict, PyFloat, PyList, PySequence, PyString, PyTuple};
 use pyo3::wrap_pyfunction;
 
 struct PythonImportResolver {
@@ -57,7 +61,47 @@ impl ImportResolver for PythonImportResolver {
     }
 }
 
-fn val_to_pyobject(py: Python, val: Val) -> PyObject {
+fn pyobject_to_val(py: Python, obj: PyObject) -> PyResult<Val> {
+    if let Ok(s) = obj.cast_as::<PyString>(py) {
+        return s.to_str().map(|s| Val::Str(s.into()));
+    } else if let Ok(b) = obj.cast_as::<PyBool>(py) {
+        return Ok(Val::Bool(b.is_true()));
+    } else if let Ok(f) = obj.cast_as::<PyFloat>(py) {
+        return Ok(Val::Num(f.value() as _));
+    } else if let Ok(l) = obj.extract::<u64>(py) {
+        return Ok(Val::Num(l as _));
+    } else if obj.is_none(py) {
+        return Ok(Val::Null);
+    } else if let Ok(seq) = obj.cast_as::<PySequence>(py) {
+        let len = seq.len()?;
+        let mut arr = Vec::with_capacity(len as usize);
+        for i in 0..len {
+            let item = seq.get_item(i)?;
+            arr.push(pyobject_to_val(py, item.into_py(py))?);
+        }
+        return Ok(Val::Arr(ArrValue::Eager(Rc::new(arr))));
+    } else if let Ok(d) = obj.cast_as::<PyDict>(py) {
+        let mut map = ObjValue::new_empty();
+        for (k, v) in d {
+            let k = k.extract::<String>()?;
+            let v = pyobject_to_val(py, v.into_py(py))?;
+            map = map.extend_with_field(
+                k.into(),
+                ObjMember {
+                    add: false,
+                    visibility: Visibility::Normal,
+                    invoke: LazyBinding::Bound(LazyVal::new_resolved(v)),
+                    location: None,
+                },
+            );
+        }
+        return Ok(Val::Obj(map));
+    } else {
+        return Err(PyTypeError::new_err("Unrecognized type return from Python Jsonnet native extension."));
+    }
+}
+
+fn val_to_pyobject(py: Python, val: &Val) -> PyObject {
     match val {
         Val::Bool(b) => b.into_py(py),
         Val::Null => py.None(),
@@ -66,7 +110,7 @@ fn val_to_pyobject(py: Python, val: Val) -> PyObject {
         Val::Arr(a) => {
             let arr = PyList::empty(py);
             for item in a.iter() {
-                arr.append(val_to_pyobject(py, item.unwrap())).unwrap();
+                arr.append(val_to_pyobject(py, &item.unwrap())).unwrap();
             }
             arr.into_py(py)
         }
@@ -74,7 +118,7 @@ fn val_to_pyobject(py: Python, val: Val) -> PyObject {
             let dict = PyDict::new(py);
             for field in o.fields() {
                 let k = field.to_string();
-                let v = o.get(field).unwrap().map(|x| val_to_pyobject(py, x));
+                let v = o.get(field).unwrap().map(|x| val_to_pyobject(py, &x));
                 dict.set_item(k, v).unwrap();
             }
             dict.into_py(py)
@@ -85,6 +129,7 @@ fn val_to_pyobject(py: Python, val: Val) -> PyObject {
 
 #[inline]
 fn create_evaluation_state(
+    py: Python,
     max_stack: usize,
     max_trace: usize,
     ext_vars: HashMap<String, String>,
@@ -92,13 +137,8 @@ fn create_evaluation_state(
     tla_vars: HashMap<String, String>,
     tla_codes: HashMap<String, String>,
     import_callback: Option<PyObject>,
-    native_callbacks: Option<&PyDict>,
+    native_callbacks: HashMap<String, (PyObject, PyObject)>,
 ) -> PyResult<EvaluationState> {
-    if native_callbacks.is_some() {
-        return Err(PyNotImplementedError::new_err(
-            "native_callbacks not implemented yet",
-        ));
-    }
     let state = EvaluationState::default();
     state.set_max_stack(max_stack);
     state.set_max_trace(max_trace);
@@ -126,6 +166,26 @@ fn create_evaluation_state(
         };
         state.set_import_resolver(Box::new(import_resolver));
     }
+    for (name, (args, func)) in native_callbacks.into_iter() {
+        let args = args.cast_as::<PyTuple>(py)?;
+        let mut params = Vec::with_capacity(args.len());
+        for arg in args {
+            let param = arg.extract::<&str>()?;
+            params.push(Param(param.into(), None));
+        }
+        let params = ParamsDesc(Rc::new(params));
+        state.add_native(
+            name.into(),
+            Rc::new(NativeCallback::new(params, move |_caller, args| {
+                Python::with_gil(|py| {
+                    let args: Vec<_> = args.iter().map(|v| val_to_pyobject(py, v)).collect();
+                    let obj = func.call(py, PyTuple::new(py, args), None).unwrap();
+                    let val = pyobject_to_val(py, obj).unwrap();
+                    Ok(val)
+                })
+            })),
+        );
+    }
     Ok(state)
 }
 
@@ -140,7 +200,7 @@ fn create_evaluation_state(
     tla_vars = "HashMap::new()",
     tla_codes = "HashMap::new()",
     import_callback = "None",
-    native_callbacks = "None"
+    native_callbacks = "HashMap::new()"
 )]
 fn evaluate_file(
     py: Python,
@@ -154,10 +214,11 @@ fn evaluate_file(
     tla_vars: HashMap<String, String>,
     tla_codes: HashMap<String, String>,
     import_callback: Option<PyObject>,
-    native_callbacks: Option<&PyDict>,
+    native_callbacks: HashMap<String, (PyObject, PyObject)>,
 ) -> PyResult<PyObject> {
     let path = PathBuf::from(filename);
     let state = create_evaluation_state(
+        py,
         max_stack,
         max_trace,
         ext_vars,
@@ -172,7 +233,7 @@ fn evaluate_file(
         .with_stdlib()
         .evaluate_file_raw(&path)
         .map_err(|e| PyRuntimeError::new_err(format!("evaluate_file error: {:?}", e)))?;
-    Ok(val_to_pyobject(py, result))
+    Ok(val_to_pyobject(py, &result))
 }
 
 /// Evaluate jsonnet code snippet
@@ -186,7 +247,7 @@ fn evaluate_file(
     tla_vars = "HashMap::new()",
     tla_codes = "HashMap::new()",
     import_callback = "None",
-    native_callbacks = "None"
+    native_callbacks = "HashMap::new()"
 )]
 fn evaluate_snippet(
     py: Python,
@@ -201,10 +262,11 @@ fn evaluate_snippet(
     tla_vars: HashMap<String, String>,
     tla_codes: HashMap<String, String>,
     import_callback: Option<PyObject>,
-    native_callbacks: Option<&PyDict>,
+    native_callbacks: HashMap<String, (PyObject, PyObject)>,
 ) -> PyResult<PyObject> {
     let path = PathBuf::from(filename);
     let state = create_evaluation_state(
+        py,
         max_stack,
         max_trace,
         ext_vars,
@@ -219,7 +281,7 @@ fn evaluate_snippet(
         .with_stdlib()
         .evaluate_snippet_raw(Rc::new(path), expr.into())
         .map_err(|e| PyRuntimeError::new_err(format!("evaluate_snippet error: {:?}", e)))?;
-    Ok(val_to_pyobject(py, result))
+    Ok(val_to_pyobject(py, &result))
 }
 
 /// Python bindings to Rust jrsonnet crate

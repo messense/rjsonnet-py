@@ -359,6 +359,7 @@ version = "0.1.0"
 dependencies = [
  "jrsonnet-evaluator",
  "jrsonnet-interner",
+ "jrsonnet-parser",
  "pyo3",
 ]
 
