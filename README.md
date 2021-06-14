@@ -3,7 +3,7 @@
 ![CI](https://github.com/messense/rjsonnet-py/workflows/CI/badge.svg)
 [![PyPI](https://img.shields.io/pypi/v/rjsonnet.svg)](https://pypi.org/project/rjsonnet)
 
-Python bindings to Rust [jrsonnet](https://github.com/CertainLach/jrsonnet) crate
+Python bindings to Rust [jrsonnet](https://github.com/CertainLach/jrsonnet) crates (Rust implementation of Jsonnet language).
 
 ## Installation
 
@@ -32,7 +32,7 @@ Keyword arguments to these functions are used to control the virtual machine. Th
 The argument `import_callback` can be used to pass a callable, to trap the Jsonnet `import` and `importstr` constructs.
 This allows, e.g., reading files out of archives or implementing library search paths.
 
-The argument `native_callback` is used to allow execution of arbitrary Python code via `std.native(...)`.
+The argument `native_callbacks` is used to allow execution of arbitrary Python code via `std.native(...)`.
 This is useful so Jsonnet code can access pure functions in the Python ecosystem, such as compression, encryption, encoding, etc.
 
 If an error is raised during the evaluation of the Jsonnet code, it is formed into a stack trace and thrown as a python `RuntimeError`.
