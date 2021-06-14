@@ -1,7 +1,6 @@
 use std::any::Any;
+use std::cell::RefCell;
 use std::collections::HashMap;
-use std::fs::File;
-use std::io::prelude::*;
 use std::path::PathBuf;
 use std::rc::Rc;
 
@@ -14,6 +13,7 @@ use pyo3::wrap_pyfunction;
 
 struct PythonImportResolver {
     callback: PyObject,
+    out: RefCell<HashMap<PathBuf, IStr>>,
 }
 
 impl ImportResolver for PythonImportResolver {
@@ -27,27 +27,29 @@ impl ImportResolver for PythonImportResolver {
         // FIXME: use PathBuf directly on PyO3 0.14
         let from_str = from.to_str().unwrap();
         let path_str = path.to_str().unwrap();
-        let resolved =
+        let (resolved, content) =
             Python::with_gil(
                 |py| match self.callback.call(py, (from_str, path_str), None) {
                     Ok(obj) => obj
-                        .extract::<(String, Option<&str>)>(py)
-                        .map(|(resolved, _content)| resolved)
+                        .extract::<(String, Option<String>)>(py)
                         .map_err(|_e| ImportFileNotFound(from.clone(), path.clone())),
                     Err(_) => Err(ImportFileNotFound(from.clone(), path.clone())),
                 },
             )?;
-        Ok(Rc::new(PathBuf::from(resolved)))
+        if let Some(content) = content {
+            let resolved = PathBuf::from(resolved);
+            let mut out = self.out.borrow_mut();
+            if !out.contains_key(&resolved) {
+                out.insert(resolved.clone(), content.into());
+            }
+            Ok(Rc::new(resolved))
+        } else {
+            Err(ImportFileNotFound(from.clone(), path.clone()).into())
+        }
     }
 
     fn load_file_contents(&self, resolved: &PathBuf) -> jrsonnet_evaluator::error::Result<IStr> {
-        use jrsonnet_evaluator::error::Error::*;
-
-        let mut file = File::open(resolved).map_err(|_e| ResolvedFileNotFound(resolved.clone()))?;
-        let mut out = String::new();
-        file.read_to_string(&mut out)
-            .map_err(|_e| ImportBadFileUtf8(resolved.clone()))?;
-        Ok(out.into())
+        Ok(self.out.borrow().get(resolved).unwrap().clone())
     }
 
     unsafe fn as_any(&self) -> &dyn Any {
@@ -120,6 +122,7 @@ fn create_evaluation_state(
     if let Some(import_callback) = import_callback {
         let import_resolver = PythonImportResolver {
             callback: import_callback,
+            out: RefCell::new(HashMap::new()),
         };
         state.set_import_resolver(Box::new(import_resolver));
     }
