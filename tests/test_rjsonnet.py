@@ -33,22 +33,31 @@ native_callbacks = {
 
 
 def test_evaluate_file():
-    assert rjsonnet.evaluate_file(
-        "test.jsonnet",
-        import_callback=import_callback,
-        native_callbacks=native_callbacks,
+    assert (
+        rjsonnet.evaluate_file(
+            "test.jsonnet",
+            import_callback=import_callback,
+            native_callbacks=native_callbacks,
+        )
+        == "true"
     )
 
-    assert rjsonnet.evaluate_file(
-        "test.jsonnet",
-        jpathdir=os.path.abspath(os.path.dirname(__file__)),
-        native_callbacks=native_callbacks,
+    assert (
+        rjsonnet.evaluate_file(
+            "test.jsonnet",
+            jpathdir=os.path.abspath(os.path.dirname(__file__)),
+            native_callbacks=native_callbacks,
+        )
+        == "true"
     )
 
-    assert rjsonnet.evaluate_file(
-        "test.jsonnet",
-        jpathdir=[os.path.abspath(os.path.dirname(__file__))],
-        native_callbacks=native_callbacks,
+    assert (
+        rjsonnet.evaluate_file(
+            "test.jsonnet",
+            jpathdir=[os.path.abspath(os.path.dirname(__file__))],
+            native_callbacks=native_callbacks,
+        )
+        == "true"
     )
 
     bad_native_callbacks = native_callbacks.copy()
@@ -63,7 +72,7 @@ def test_evaluate_file():
 
 def test_evaluate_snippet():
     code = "std.assertEqual(({ x: 1, y: self.x } { x: 2 }).y, 2)"
-    assert rjsonnet.evaluate_snippet("test", code)
+    assert rjsonnet.evaluate_snippet("test", code) == "true"
 
 
 def test_import_callback_non_callable():

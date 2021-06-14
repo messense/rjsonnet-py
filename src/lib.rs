@@ -12,7 +12,7 @@ use jrsonnet_evaluator::{
 };
 use jrsonnet_interner::IStr;
 use jrsonnet_parser::{Param, ParamsDesc, Visibility};
-use pyo3::exceptions::{PyRuntimeError, PyTypeError};
+use pyo3::exceptions::{PyRuntimeError, PyTypeError, PyValueError};
 use pyo3::prelude::*;
 use pyo3::types::{PyBool, PyDict, PyFloat, PyList, PySequence, PyString, PyTuple};
 use pyo3::wrap_pyfunction;
@@ -257,7 +257,7 @@ fn evaluate_file(
     max_trace: usize,
     import_callback: Option<PyObject>,
     native_callbacks: HashMap<String, (PyObject, PyObject)>,
-) -> PyResult<PyObject> {
+) -> PyResult<String> {
     let path = PathBuf::from(filename);
     let state = create_evaluation_state(
         py,
@@ -276,7 +276,10 @@ fn evaluate_file(
         .with_stdlib()
         .evaluate_file_raw(&path)
         .map_err(|e| PyRuntimeError::new_err(format!("evaluate_file error: {:?}", e)))?;
-    Ok(val_to_pyobject(py, &result))
+    let out = result
+        .to_string()
+        .map_err(|e| PyValueError::new_err(format!("convert to string failed: {:?}", e)))?;
+    Ok(out.to_string())
 }
 
 /// Evaluate jsonnet code snippet
@@ -309,7 +312,7 @@ fn evaluate_snippet(
     max_trace: usize,
     import_callback: Option<PyObject>,
     native_callbacks: HashMap<String, (PyObject, PyObject)>,
-) -> PyResult<PyObject> {
+) -> PyResult<String> {
     let path = PathBuf::from(filename);
     let state = create_evaluation_state(
         py,
@@ -328,7 +331,10 @@ fn evaluate_snippet(
         .with_stdlib()
         .evaluate_snippet_raw(Rc::new(path), src.into())
         .map_err(|e| PyRuntimeError::new_err(format!("evaluate_snippet error: {:?}", e)))?;
-    Ok(val_to_pyobject(py, &result))
+    let out = result
+        .to_string()
+        .map_err(|e| PyValueError::new_err(format!("convert to string failed: {:?}", e)))?;
+    Ok(out.to_string())
 }
 
 /// Python bindings to Rust jrsonnet crate
