@@ -84,6 +84,7 @@ fn val_to_pyobject(py: Python, val: Val) -> PyObject {
     }
 }
 
+/// Evaluate jsonnet file
 #[pyfunction(import_callback = "None", native_callbacks = "None")]
 fn evaluate_file(
     py: Python,
@@ -111,6 +112,7 @@ fn evaluate_file(
     Ok(val_to_pyobject(py, result))
 }
 
+/// Evaluate jsonnet code snippet
 #[pyfunction(import_callback = "None", native_callbacks = "None")]
 fn evaluate_snippet(
     py: Python,
