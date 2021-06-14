@@ -135,7 +135,7 @@ fn val_to_pyobject(py: Python, val: &Val) -> PyObject {
 #[inline]
 fn create_evaluation_state(
     py: Python,
-    jpathdir: Option<&str>,
+    jpathdir: Option<Vec<PathBuf>>,
     max_stack: usize,
     ext_vars: HashMap<String, String>,
     ext_codes: HashMap<String, String>,
@@ -173,7 +173,7 @@ fn create_evaluation_state(
         state.set_import_resolver(Box::new(import_resolver));
     } else if let Some(jpathdir) = jpathdir {
         let import_resolver = FileImportResolver {
-            library_paths: vec![PathBuf::from(jpathdir)],
+            library_paths: jpathdir,
         };
         state.set_import_resolver(Box::new(import_resolver));
     }
@@ -210,6 +210,21 @@ fn create_evaluation_state(
     Ok(state)
 }
 
+#[derive(FromPyObject)]
+enum LibraryPath {
+    Single(String),
+    Multi(Vec<String>),
+}
+
+impl LibraryPath {
+    fn into_vec(self) -> Vec<PathBuf> {
+        match self {
+            LibraryPath::Single(s) => vec![PathBuf::from(s)],
+            LibraryPath::Multi(l) => l.into_iter().map(PathBuf::from).collect(),
+        }
+    }
+}
+
 /// Evaluate jsonnet file
 #[allow(clippy::too_many_arguments)]
 #[pyfunction(
@@ -228,7 +243,7 @@ fn create_evaluation_state(
 fn evaluate_file(
     py: Python,
     filename: &str,
-    jpathdir: Option<&str>,
+    jpathdir: Option<LibraryPath>,
     max_stack: usize,
     #[allow(unused_variables)] gc_min_objects: usize,
     #[allow(unused_variables)] gc_growth_trigger: f64,
@@ -243,7 +258,7 @@ fn evaluate_file(
     let path = PathBuf::from(filename);
     let state = create_evaluation_state(
         py,
-        jpathdir,
+        jpathdir.map(|x| x.into_vec()),
         max_stack,
         ext_vars,
         ext_codes,
@@ -280,7 +295,7 @@ fn evaluate_snippet(
     py: Python,
     filename: &str,
     src: &str,
-    jpathdir: Option<&str>,
+    jpathdir: Option<LibraryPath>,
     max_stack: usize,
     #[allow(unused_variables)] gc_min_objects: usize,
     #[allow(unused_variables)] gc_growth_trigger: f64,
@@ -295,7 +310,7 @@ fn evaluate_snippet(
     let path = PathBuf::from(filename);
     let state = create_evaluation_state(
         py,
-        jpathdir,
+        jpathdir.map(|x| x.into_vec()),
         max_stack,
         ext_vars,
         ext_codes,
