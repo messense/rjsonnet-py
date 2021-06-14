@@ -1,5 +1,6 @@
 import os
 
+import pytest
 import rjsonnet
 
 
@@ -43,6 +44,15 @@ def test_evaluate_file():
         jpathdir=os.path.abspath(os.path.dirname(__file__)),
         native_callbacks=native_callbacks,
     )
+
+    bad_native_callbacks = native_callbacks.copy()
+    bad_native_callbacks["concat"] = (("a", "b"), lambda a: a)
+    with pytest.raises(RuntimeError):
+        rjsonnet.evaluate_file(
+            "test.jsonnet",
+            jpathdir=os.path.abspath(os.path.dirname(__file__)),
+            native_callbacks=bad_native_callbacks,
+        )
 
 
 def test_evaluate_snippet():

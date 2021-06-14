@@ -4,6 +4,7 @@ use std::collections::HashMap;
 use std::path::PathBuf;
 use std::rc::Rc;
 
+use jrsonnet_evaluator::error::LocError;
 use jrsonnet_evaluator::native::NativeCallback;
 use jrsonnet_evaluator::{
     ArrValue, EvaluationState, FileImportResolver, ImportResolver, LazyBinding, LazyVal, ObjMember,
@@ -186,13 +187,22 @@ fn create_evaluation_state(
         }
         let params = ParamsDesc(Rc::new(params));
         state.add_native(
-            name.into(),
+            name.clone().into(),
             Rc::new(NativeCallback::new(params, move |_caller, args| {
                 Python::with_gil(|py| {
                     let args: Vec<_> = args.iter().map(|v| val_to_pyobject(py, v)).collect();
-                    let obj = func.call(py, PyTuple::new(py, args), None).unwrap();
-                    let val = pyobject_to_val(py, obj).unwrap();
-                    Ok(val)
+                    let err = match func.call(py, PyTuple::new(py, args), None) {
+                        Ok(obj) => match pyobject_to_val(py, obj) {
+                            Ok(val) => return Ok(val),
+                            Err(err) => err,
+                        },
+                        Err(err) => err,
+                    };
+                    Err(LocError::new(
+                        jrsonnet_evaluator::error::Error::RuntimeError(
+                            format!("error invoking native extension {}: {}", name, err).into(),
+                        ),
+                    ))
                 })
             })),
         );
