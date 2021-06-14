@@ -1,4 +1,5 @@
 use std::any::Any;
+use std::collections::HashMap;
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::PathBuf;
@@ -6,7 +7,7 @@ use std::rc::Rc;
 
 use jrsonnet_evaluator::{EvaluationState, ImportResolver, Val};
 use jrsonnet_interner::IStr;
-use pyo3::exceptions::PyNotImplementedError;
+use pyo3::exceptions::{PyNotImplementedError, PyRuntimeError};
 use pyo3::prelude::*;
 use pyo3::types::{PyDict, PyList};
 use pyo3::wrap_pyfunction;
@@ -80,10 +81,61 @@ fn val_to_pyobject(py: Python, val: Val) -> PyObject {
     }
 }
 
+#[inline]
+fn create_evaluation_state(
+    max_stack: usize,
+    max_trace: usize,
+    ext_vars: HashMap<String, String>,
+    ext_codes: HashMap<String, String>,
+    tla_vars: HashMap<String, String>,
+    tla_codes: HashMap<String, String>,
+    import_callback: Option<PyObject>,
+    native_callbacks: Option<&PyDict>,
+) -> PyResult<EvaluationState> {
+    if native_callbacks.is_some() {
+        return Err(PyNotImplementedError::new_err(
+            "native_callbacks not implemented yet",
+        ));
+    }
+    let state = EvaluationState::default();
+    state.set_max_stack(max_stack);
+    state.set_max_trace(max_trace);
+    for (k, v) in ext_vars.into_iter() {
+        state.add_ext_str(k.into(), v.into());
+    }
+    for (k, v) in ext_codes.into_iter() {
+        state
+            .add_ext_code(k.into(), v.into())
+            .map_err(|e| PyRuntimeError::new_err(format!("add_ext_code error: {:?}", e)))?;
+    }
+    for (k, v) in tla_vars.into_iter() {
+        state.add_tla_str(k.into(), v.into());
+    }
+    for (k, v) in tla_codes.into_iter() {
+        state
+            .add_tla_code(k.into(), v.into())
+            .map_err(|e| PyRuntimeError::new_err(format!("add_tla_code error: {:?}", e)))?;
+    }
+
+    if let Some(import_callback) = import_callback {
+        let import_resolver = PythonImportResolver {
+            callback: import_callback,
+        };
+        state.set_import_resolver(Box::new(import_resolver));
+    }
+    Ok(state)
+}
+
 /// Evaluate jsonnet file
 #[pyfunction(
     max_stack = "500",
     max_trace = "20",
+    gc_min_objects = "1000",
+    gc_growth_trigger = "2.0",
+    ext_vars = "HashMap::new()",
+    ext_codes = "HashMap::new()",
+    tla_vars = "HashMap::new()",
+    tla_codes = "HashMap::new()",
     import_callback = "None",
     native_callbacks = "None"
 )]
@@ -92,28 +144,31 @@ fn evaluate_file(
     filename: &str,
     max_stack: usize,
     max_trace: usize,
+    #[allow(unused_variables)] gc_min_objects: usize,
+    #[allow(unused_variables)] gc_growth_trigger: f64,
+    ext_vars: HashMap<String, String>,
+    ext_codes: HashMap<String, String>,
+    tla_vars: HashMap<String, String>,
+    tla_codes: HashMap<String, String>,
     import_callback: Option<PyObject>,
     native_callbacks: Option<&PyDict>,
 ) -> PyResult<PyObject> {
-    if native_callbacks.is_some() {
-        return Err(PyNotImplementedError::new_err(
-            "native_callbacks not implemented yet",
-        ));
-    }
-
     let path = PathBuf::from(filename);
-    let state = EvaluationState::default();
-    state.set_max_stack(max_stack);
-    state.set_max_trace(max_trace);
+    let state = create_evaluation_state(
+        max_stack,
+        max_trace,
+        ext_vars,
+        ext_codes,
+        tla_vars,
+        tla_codes,
+        import_callback,
+        native_callbacks,
+    )?;
 
-    if let Some(import_callback) = import_callback {
-        let import_resolver = PythonImportResolver {
-            callback: import_callback,
-        };
-        state.set_import_resolver(Box::new(import_resolver));
-    }
-
-    let result = state.with_stdlib().evaluate_file_raw(&path).unwrap();
+    let result = state
+        .with_stdlib()
+        .evaluate_file_raw(&path)
+        .map_err(|e| PyRuntimeError::new_err(format!("evaluate_file error: {:?}", e)))?;
     Ok(val_to_pyobject(py, result))
 }
 
@@ -121,6 +176,12 @@ fn evaluate_file(
 #[pyfunction(
     max_stack = "500",
     max_trace = "20",
+    gc_min_objects = "1000",
+    gc_growth_trigger = "2.0",
+    ext_vars = "HashMap::new()",
+    ext_codes = "HashMap::new()",
+    tla_vars = "HashMap::new()",
+    tla_codes = "HashMap::new()",
     import_callback = "None",
     native_callbacks = "None"
 )]
@@ -130,31 +191,31 @@ fn evaluate_snippet(
     expr: &str,
     max_stack: usize,
     max_trace: usize,
+    #[allow(unused_variables)] gc_min_objects: usize,
+    #[allow(unused_variables)] gc_growth_trigger: f64,
+    ext_vars: HashMap<String, String>,
+    ext_codes: HashMap<String, String>,
+    tla_vars: HashMap<String, String>,
+    tla_codes: HashMap<String, String>,
     import_callback: Option<PyObject>,
     native_callbacks: Option<&PyDict>,
 ) -> PyResult<PyObject> {
-    if native_callbacks.is_some() {
-        return Err(PyNotImplementedError::new_err(
-            "native_callbacks not implemented yet",
-        ));
-    }
-
     let path = PathBuf::from(filename);
-    let state = EvaluationState::default();
-    state.set_max_stack(max_stack);
-    state.set_max_trace(max_trace);
-
-    if let Some(import_callback) = import_callback {
-        let import_resolver = PythonImportResolver {
-            callback: import_callback,
-        };
-        state.set_import_resolver(Box::new(import_resolver));
-    }
+    let state = create_evaluation_state(
+        max_stack,
+        max_trace,
+        ext_vars,
+        ext_codes,
+        tla_vars,
+        tla_codes,
+        import_callback,
+        native_callbacks,
+    )?;
 
     let result = state
         .with_stdlib()
         .evaluate_snippet_raw(Rc::new(path), expr.into())
-        .unwrap();
+        .map_err(|e| PyRuntimeError::new_err(format!("evaluate_snippet error: {:?}", e)))?;
     Ok(val_to_pyobject(py, result))
 }
 
