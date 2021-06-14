@@ -130,6 +130,7 @@ fn val_to_pyobject(py: Python, val: &Val) -> PyObject {
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 #[inline]
 fn create_evaluation_state(
     py: Python,
@@ -200,6 +201,7 @@ fn create_evaluation_state(
 }
 
 /// Evaluate jsonnet file
+#[allow(clippy::too_many_arguments)]
 #[pyfunction(
     jpathdir = "None",
     max_stack = "500",
@@ -250,6 +252,7 @@ fn evaluate_file(
 }
 
 /// Evaluate jsonnet code snippet
+#[allow(clippy::too_many_arguments)]
 #[pyfunction(
     jpathdir = "None",
     max_stack = "500",
