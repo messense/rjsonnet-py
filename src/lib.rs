@@ -12,7 +12,7 @@ use jrsonnet_evaluator::{
 };
 use jrsonnet_interner::IStr;
 use jrsonnet_parser::{Param, ParamsDesc, Visibility};
-use pyo3::exceptions::{PyRuntimeError, PyTypeError, PyValueError};
+use pyo3::exceptions::{PyRuntimeError, PyTypeError};
 use pyo3::prelude::*;
 use pyo3::types::{PyBool, PyDict, PyFloat, PyList, PySequence, PyString, PyTuple};
 use pyo3::wrap_pyfunction;
@@ -259,7 +259,7 @@ fn evaluate_file(
     native_callbacks: HashMap<String, (PyObject, PyObject)>,
 ) -> PyResult<String> {
     let path = PathBuf::from(filename);
-    let state = create_evaluation_state(
+    let vm = create_evaluation_state(
         py,
         jpathdir.map(|x| x.into_vec()),
         max_stack,
@@ -272,14 +272,13 @@ fn evaluate_file(
         native_callbacks,
     )?;
 
-    let result = state
+    let result = vm
         .with_stdlib()
-        .evaluate_file_raw(&path)
+        .evaluate_file_raw_nocwd(&path)
+        .and_then(|v| vm.with_tla(v))
+        .and_then(|v| vm.manifest(v))
         .map_err(|e| PyRuntimeError::new_err(format!("evaluate_file error: {:?}", e)))?;
-    let out = result
-        .to_string()
-        .map_err(|e| PyValueError::new_err(format!("convert to string failed: {:?}", e)))?;
-    Ok(out.to_string())
+    Ok(result.to_string())
 }
 
 /// Evaluate jsonnet code snippet
@@ -314,7 +313,7 @@ fn evaluate_snippet(
     native_callbacks: HashMap<String, (PyObject, PyObject)>,
 ) -> PyResult<String> {
     let path = PathBuf::from(filename);
-    let state = create_evaluation_state(
+    let vm = create_evaluation_state(
         py,
         jpathdir.map(|x| x.into_vec()),
         max_stack,
@@ -327,14 +326,13 @@ fn evaluate_snippet(
         native_callbacks,
     )?;
 
-    let result = state
+    let result = vm
         .with_stdlib()
         .evaluate_snippet_raw(Rc::new(path), src.into())
+        .and_then(|v| vm.with_tla(v))
+        .and_then(|v| vm.manifest(v))
         .map_err(|e| PyRuntimeError::new_err(format!("evaluate_snippet error: {:?}", e)))?;
-    let out = result
-        .to_string()
-        .map_err(|e| PyValueError::new_err(format!("convert to string failed: {:?}", e)))?;
-    Ok(out.to_string())
+    Ok(result.to_string())
 }
 
 /// Python bindings to Rust jrsonnet crate
