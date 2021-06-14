@@ -32,10 +32,15 @@ native_callbacks = {
 
 
 def test_evaluate_file():
-
     assert rjsonnet.evaluate_file(
         "test.jsonnet",
         import_callback=import_callback,
+        native_callbacks=native_callbacks,
+    )
+
+    assert rjsonnet.evaluate_file(
+        "test.jsonnet",
+        jpathdir=os.path.abspath(os.path.dirname(__file__)),
         native_callbacks=native_callbacks,
     )
 
