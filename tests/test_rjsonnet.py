@@ -85,12 +85,22 @@ def test_import_callback_non_callable():
 
 
 def test_import_callback_error():
-    def import_callback(dir, rel):
+    def import_callback_1(dir, rel):
         raise ValueError("error")
 
     with pytest.raises(RuntimeError):
         rjsonnet.evaluate_file(
             "test.jsonnet",
-            import_callback=import_callback,
+            import_callback=import_callback_1,
+            native_callbacks=native_callbacks,
+        )
+
+    def import_callback_2(dir, rel):
+        return "fake", None
+
+    with pytest.raises(OSError):
+        rjsonnet.evaluate_file(
+            "test.jsonnet",
+            import_callback=import_callback_2,
             native_callbacks=native_callbacks,
         )
