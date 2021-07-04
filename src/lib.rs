@@ -15,7 +15,6 @@ use jrsonnet_parser::{Param, ParamsDesc, Visibility};
 use pyo3::exceptions::{PyOSError, PyRuntimeError, PyTypeError};
 use pyo3::prelude::*;
 use pyo3::types::{PyBool, PyDict, PyFloat, PyList, PySequence, PyString, PyTuple};
-use pyo3::wrap_pyfunction;
 
 struct PythonImportResolver {
     callback: PyObject,
