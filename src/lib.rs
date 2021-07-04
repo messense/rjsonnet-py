@@ -12,7 +12,7 @@ use jrsonnet_evaluator::{
 };
 use jrsonnet_interner::IStr;
 use jrsonnet_parser::{Param, ParamsDesc, Visibility};
-use pyo3::exceptions::{PyOSError, PyRuntimeError, PyTypeError};
+use pyo3::exceptions::{PyRuntimeError, PyTypeError};
 use pyo3::prelude::*;
 use pyo3::types::{PyBool, PyDict, PyFloat, PyList, PySequence, PyString, PyTuple};
 
@@ -34,13 +34,19 @@ impl ImportResolver for PythonImportResolver {
                 .callback
                 .call(py, (from.as_path(), path.as_path()), None)
             {
-                Ok(obj) => obj
-                    .extract::<(String, Option<String>)>(py)
-                    .map_err(|err| ImportCallbackError(format!("import_callback error: {}", err))),
-                Err(err) => Err(ImportCallbackError(format!(
-                    "import_callback error: {}",
-                    err
-                ))),
+                Ok(obj) => obj.extract::<(String, Option<String>)>(py).map_err(|err| {
+                    let err_msg = err.to_string();
+                    err.restore(py);
+                    ImportCallbackError(format!("import_callback error: {}", err_msg))
+                }),
+                Err(err) => {
+                    let err_msg = err.to_string();
+                    err.restore(py);
+                    Err(ImportCallbackError(format!(
+                        "import_callback error: {}",
+                        err_msg
+                    )))
+                }
             }
         })?;
         if let Some(content) = content {
@@ -200,9 +206,11 @@ fn create_evaluation_state(
                         },
                         Err(err) => err,
                     };
+                    let err_msg = err.to_string();
+                    err.restore(py);
                     Err(LocError::new(
                         jrsonnet_evaluator::error::Error::RuntimeError(
-                            format!("error invoking native extension {}: {}", name, err).into(),
+                            format!("error invoking native extension {}: {}", name, err_msg).into(),
                         ),
                     ))
                 })
@@ -212,14 +220,17 @@ fn create_evaluation_state(
     Ok(vm)
 }
 
-fn loc_error_to_pyerr(vm: &EvaluationState, loc_err: &LocError) -> PyErr {
-    use jrsonnet_evaluator::error::Error::*;
-
-    let err_str = vm.stringify_err(loc_err);
-    match loc_err.error() {
-        ImportFileNotFound(..) | ResolvedFileNotFound(..) => PyOSError::new_err(err_str),
-        _ => PyRuntimeError::new_err(err_str),
+fn loc_error_to_pyerr(py: Python, vm: &EvaluationState, loc_err: &LocError) -> PyErr {
+    let cause = if PyErr::occurred(py) {
+        Some(PyErr::fetch(py))
+    } else {
+        None
+    };
+    let py_err = PyRuntimeError::new_err(vm.stringify_err(loc_err));
+    if cause.is_some() {
+        py_err.set_cause(py, cause);
     }
+    py_err
 }
 
 #[derive(FromPyObject)]
@@ -286,7 +297,7 @@ fn evaluate_file(
         .evaluate_file_raw_nocwd(&path)
         .and_then(|v| vm.with_tla(v))
         .and_then(|v| vm.manifest(v))
-        .map_err(|e| loc_error_to_pyerr(&vm, &e))?;
+        .map_err(|e| loc_error_to_pyerr(py, &vm, &e))?;
     Ok(result.to_string())
 }
 
@@ -340,7 +351,7 @@ fn evaluate_snippet(
         .evaluate_snippet_raw(Rc::new(path), src.into())
         .and_then(|v| vm.with_tla(v))
         .and_then(|v| vm.manifest(v))
-        .map_err(|e| loc_error_to_pyerr(&vm, &e))?;
+        .map_err(|e| loc_error_to_pyerr(py, &vm, &e))?;
     Ok(result.to_string())
 }
 

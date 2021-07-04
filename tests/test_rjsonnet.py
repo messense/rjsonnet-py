@@ -62,12 +62,13 @@ def test_evaluate_file():
 
     bad_native_callbacks = native_callbacks.copy()
     bad_native_callbacks["concat"] = (("a", "b"), lambda a: a)
-    with pytest.raises(RuntimeError):
+    with pytest.raises(RuntimeError) as exc:
         rjsonnet.evaluate_file(
             "test.jsonnet",
             jpathdir=os.path.abspath(os.path.dirname(__file__)),
             native_callbacks=bad_native_callbacks,
         )
+    assert isinstance(exc.value.__cause__, TypeError)
 
 
 def test_evaluate_snippet():
@@ -88,17 +89,18 @@ def test_import_callback_error():
     def import_callback_1(dir, rel):
         raise ValueError("error")
 
-    with pytest.raises(RuntimeError):
+    with pytest.raises(RuntimeError) as exc:
         rjsonnet.evaluate_file(
             "test.jsonnet",
             import_callback=import_callback_1,
             native_callbacks=native_callbacks,
         )
+    assert isinstance(exc.value.__cause__, ValueError)
 
     def import_callback_2(dir, rel):
         return "fake", None
 
-    with pytest.raises(OSError):
+    with pytest.raises(RuntimeError):
         rjsonnet.evaluate_file(
             "test.jsonnet",
             import_callback=import_callback_2,
