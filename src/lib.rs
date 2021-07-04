@@ -30,21 +30,20 @@ impl ImportResolver for PythonImportResolver {
     ) -> jrsonnet_evaluator::error::Result<Rc<PathBuf>> {
         use jrsonnet_evaluator::error::Error::*;
 
-        // FIXME: use PathBuf directly on PyO3 0.14
-        let from_str = from.to_str().unwrap();
-        let path_str = path.to_str().unwrap();
-        let (resolved, content) =
-            Python::with_gil(
-                |py| match self.callback.call(py, (from_str, path_str), None) {
-                    Ok(obj) => obj.extract::<(String, Option<String>)>(py).map_err(|err| {
-                        ImportCallbackError(format!("import_callback error: {}", err))
-                    }),
-                    Err(err) => Err(ImportCallbackError(format!(
-                        "import_callback error: {}",
-                        err
-                    ))),
-                },
-            )?;
+        let (resolved, content) = Python::with_gil(|py| {
+            match self
+                .callback
+                .call(py, (from.as_path(), path.as_path()), None)
+            {
+                Ok(obj) => obj
+                    .extract::<(String, Option<String>)>(py)
+                    .map_err(|err| ImportCallbackError(format!("import_callback error: {}", err))),
+                Err(err) => Err(ImportCallbackError(format!(
+                    "import_callback error: {}",
+                    err
+                ))),
+            }
+        })?;
         if let Some(content) = content {
             let resolved = PathBuf::from(resolved);
             let mut out = self.out.borrow_mut();
