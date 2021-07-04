@@ -226,15 +226,15 @@ fn loc_error_to_pyerr(vm: &EvaluationState, loc_err: &LocError) -> PyErr {
 
 #[derive(FromPyObject)]
 enum LibraryPath {
-    Single(String),
-    Multi(Vec<String>),
+    Single(PathBuf),
+    Multi(Vec<PathBuf>),
 }
 
 impl LibraryPath {
     fn into_vec(self) -> Vec<PathBuf> {
         match self {
-            LibraryPath::Single(s) => vec![PathBuf::from(s)],
-            LibraryPath::Multi(l) => l.into_iter().map(PathBuf::from).collect(),
+            LibraryPath::Single(s) => vec![s],
+            LibraryPath::Multi(l) => l,
         }
     }
 }
