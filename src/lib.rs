@@ -29,11 +29,8 @@ impl ImportResolver for PythonImportResolver {
     ) -> jrsonnet_evaluator::error::Result<Rc<PathBuf>> {
         use jrsonnet_evaluator::error::Error::*;
 
-        let (resolved, content) = Python::with_gil(|py| {
-            match self
-                .callback
-                .call(py, (from.as_path(), path.as_path()), None)
-            {
+        let (resolved, content) =
+            Python::with_gil(|py| match self.callback.call(py, (from, path), None) {
                 Ok(obj) => obj.extract::<(String, Option<String>)>(py).map_err(|err| {
                     let err_msg = err.to_string();
                     err.restore(py);
@@ -47,8 +44,7 @@ impl ImportResolver for PythonImportResolver {
                         err_msg
                     )))
                 }
-            }
-        })?;
+            })?;
         if let Some(content) = content {
             let resolved = PathBuf::from(resolved);
             let mut out = self.out.borrow_mut();
