@@ -1,16 +1,16 @@
 use std::any::Any;
 use std::cell::RefCell;
 use std::collections::HashMap;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::rc::Rc;
 
 use jrsonnet_evaluator::error::LocError;
-use jrsonnet_evaluator::native::NativeCallback;
+use jrsonnet_evaluator::native::{NativeCallback, NativeCallbackHandler};
 use jrsonnet_evaluator::{
-    ArrValue, EvaluationState, FileImportResolver, ImportResolver, LazyBinding, LazyVal, ObjMember,
-    ObjValue, Val,
+    ArrValue, EvaluationState, FileImportResolver, IStr, ImportResolver, LazyBinding, LazyVal,
+    ObjMember, ObjValue, Val,
 };
-use jrsonnet_interner::IStr;
+use jrsonnet_gc::{unsafe_empty_trace, Finalize, Gc, Trace};
 use jrsonnet_parser::{Param, ParamsDesc, Visibility};
 use pyo3::exceptions::{PyRuntimeError, PyTypeError};
 use pyo3::prelude::*;
@@ -24,9 +24,9 @@ struct PythonImportResolver {
 impl ImportResolver for PythonImportResolver {
     fn resolve_file(
         &self,
-        from: &PathBuf,
-        path: &PathBuf,
-    ) -> jrsonnet_evaluator::error::Result<Rc<PathBuf>> {
+        from: &Path,
+        path: &Path,
+    ) -> jrsonnet_evaluator::error::Result<Rc<Path>> {
         use jrsonnet_evaluator::error::Error::*;
 
         let (resolved, content) =
@@ -51,13 +51,13 @@ impl ImportResolver for PythonImportResolver {
             if !out.contains_key(&resolved) {
                 out.insert(resolved.clone(), content.into());
             }
-            Ok(Rc::new(resolved))
+            Ok(resolved.into())
         } else {
-            Err(ImportFileNotFound(from.clone(), path.clone()).into())
+            Err(ImportFileNotFound(from.to_path_buf(), path.to_path_buf()).into())
         }
     }
 
-    fn load_file_contents(&self, resolved: &PathBuf) -> jrsonnet_evaluator::error::Result<IStr> {
+    fn load_file_contents(&self, resolved: &Path) -> jrsonnet_evaluator::error::Result<IStr> {
         Ok(self.out.borrow().get(resolved).unwrap().clone())
     }
 
@@ -84,7 +84,7 @@ fn pyobject_to_val(py: Python, obj: PyObject) -> PyResult<Val> {
             let item = seq.get_item(i)?;
             arr.push(pyobject_to_val(py, item.into_py(py))?);
         }
-        Ok(Val::Arr(ArrValue::Eager(Rc::new(arr))))
+        Ok(Val::Arr(ArrValue::Eager(Gc::new(arr))))
     } else if let Ok(d) = obj.cast_as::<PyDict>(py) {
         let mut map = ObjValue::new_empty();
         for (k, v) in d {
@@ -131,6 +131,39 @@ fn val_to_pyobject(py: Python, val: &Val) -> PyObject {
             dict.into_py(py)
         }
         Val::Func(_) => unimplemented!(),
+    }
+}
+
+struct JsonnetNativeCallbackHandler {
+    name: String,
+    func: PyObject,
+}
+
+impl Finalize for JsonnetNativeCallbackHandler {}
+
+unsafe impl Trace for JsonnetNativeCallbackHandler {
+    unsafe_empty_trace!();
+}
+
+impl NativeCallbackHandler for JsonnetNativeCallbackHandler {
+    fn call(&self, _from: Option<Rc<Path>>, args: &[Val]) -> Result<Val, LocError> {
+        Python::with_gil(|py| {
+            let args: Vec<_> = args.iter().map(|v| val_to_pyobject(py, v)).collect();
+            let err = match self.func.call(py, PyTuple::new(py, args), None) {
+                Ok(obj) => match pyobject_to_val(py, obj) {
+                    Ok(val) => return Ok(val),
+                    Err(err) => err,
+                },
+                Err(err) => err,
+            };
+            let err_msg = err.to_string();
+            err.restore(py);
+            Err(LocError::new(
+                jrsonnet_evaluator::error::Error::RuntimeError(
+                    format!("error invoking native extension {}: {}", self.name, err_msg).into(),
+                ),
+            ))
+        })
     }
 }
 
@@ -192,25 +225,10 @@ fn create_evaluation_state(
         let params = ParamsDesc(Rc::new(params));
         vm.add_native(
             name.clone().into(),
-            Rc::new(NativeCallback::new(params, move |_caller, args| {
-                Python::with_gil(|py| {
-                    let args: Vec<_> = args.iter().map(|v| val_to_pyobject(py, v)).collect();
-                    let err = match func.call(py, PyTuple::new(py, args), None) {
-                        Ok(obj) => match pyobject_to_val(py, obj) {
-                            Ok(val) => return Ok(val),
-                            Err(err) => err,
-                        },
-                        Err(err) => err,
-                    };
-                    let err_msg = err.to_string();
-                    err.restore(py);
-                    Err(LocError::new(
-                        jrsonnet_evaluator::error::Error::RuntimeError(
-                            format!("error invoking native extension {}: {}", name, err_msg).into(),
-                        ),
-                    ))
-                })
-            })),
+            Gc::new(NativeCallback::new(
+                params,
+                Box::new(JsonnetNativeCallbackHandler { name, func }),
+            )),
         );
     }
     Ok(vm)
@@ -344,7 +362,7 @@ fn evaluate_snippet(
 
     let result = vm
         .with_stdlib()
-        .evaluate_snippet_raw(Rc::new(path), src.into())
+        .evaluate_snippet_raw(path.into(), src.into())
         .and_then(|v| vm.with_tla(v))
         .and_then(|v| vm.manifest(v))
         .map_err(|e| loc_error_to_pyerr(py, &vm, &e))?;

@@ -15,7 +15,7 @@ name = "rjsonnet"
 crate-type = ["cdylib"]
 
 [dependencies]
-jrsonnet-evaluator = "0.3.8"
-jrsonnet-interner = "0.3.8"
-jrsonnet-parser = "0.3.8"
+jrsonnet-evaluator = "0.4.1"
+jrsonnet-gc = "0.4.2"
+jrsonnet-parser = "0.4.1"
 pyo3 = { version = "0.14.1", features = ["abi3-py36", "extension-module"] }
