@@ -267,13 +267,13 @@ impl LibraryPath {
 #[pyfunction(
     jpathdir = "None",
     max_stack = "500",
-    max_trace = "20",
     gc_min_objects = "1000",
     gc_growth_trigger = "2.0",
     ext_vars = "HashMap::new()",
     ext_codes = "HashMap::new()",
     tla_vars = "HashMap::new()",
     tla_codes = "HashMap::new()",
+    max_trace = "20",
     import_callback = "None",
     native_callbacks = "HashMap::new()"
 )]
