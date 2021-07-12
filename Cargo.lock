@@ -64,9 +64,9 @@ dependencies = [
 
 [[package]]
 name = "instant"
-version = "0.1.9"
+version = "0.1.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "61124eeebbd69b8190558df225adf7e4caafce0d743919e5d6b19652314ec5ec"
+checksum = "bee0328b1209d157ef001c94dd85b4f8f64139adb0eac2659f4b08382b2f474d"
 dependencies = [
  "cfg-if",
 ]
@@ -79,9 +79,9 @@ checksum = "dd25036021b0de88a0aff6b850051563c6516d0bf53f8638938edbb9de732736"
 
 [[package]]
 name = "jrsonnet-evaluator"
-version = "0.4.1"
+version = "0.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "592c623a1862a9f864cf498eee0d9df45c1f07bfcb55d77fc1ae803594b533b1"
+checksum = "fee60406dac44a01b37e120b43adb062047251e195db15392b825f6bdc948712"
 dependencies = [
  "annotate-snippets",
  "base64",
@@ -122,9 +122,9 @@ dependencies = [
 
 [[package]]
 name = "jrsonnet-interner"
-version = "0.4.1"
+version = "0.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "694253416d4e5184ea797b5da6fefd3741e56413da02b3b8bfa462c82edcafd6"
+checksum = "e5ff75843e778244f3476800e6f492950a6ecee1d9308019764983d311620bf9"
 dependencies = [
  "jrsonnet-gc",
  "rustc-hash",
@@ -133,9 +133,9 @@ dependencies = [
 
 [[package]]
 name = "jrsonnet-parser"
-version = "0.4.1"
+version = "0.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5fd851f5243f19c470d2e7eca140c15f0ef1d3c5dacd16a3d6b82349dd930fdd"
+checksum = "daaad69b21c1dba904f3bb1640e02f8f60c5cd4eae8c9bc035b38a83324cdf45"
 dependencies = [
  "jrsonnet-gc",
  "jrsonnet-interner",
@@ -146,15 +146,15 @@ dependencies = [
 
 [[package]]
 name = "jrsonnet-stdlib"
-version = "0.4.1"
+version = "0.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "077c4afca2fe5abab6f440f30aa79354c83a8e22cdb111cc2bc4ee4c238c498b"
+checksum = "840295ba3a8d65bf71e57a57acbef4c77d11c543739cfded27f91feef239f80e"
 
 [[package]]
 name = "jrsonnet-types"
-version = "0.4.1"
+version = "0.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b8540855e15f322108b42db98d8b330b7292112354d4b52577f1ee34802cc300"
+checksum = "909b38de99711ef357a514af1ed112e6cf411ab8b204cc92507b6e219e65fe5c"
 dependencies = [
  "jrsonnet-gc",
  "peg",
@@ -162,9 +162,9 @@ dependencies = [
 
 [[package]]
 name = "libc"
-version = "0.2.97"
+version = "0.2.98"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "12b8adadd720df158f4d70dfe7ccc6adb0472d7c55ca83445f6a5ab3e36f8fb6"
+checksum = "320cfe77175da3a483efed4bc0adc1968ca050b098ce4f2f1c13a56626128790"
 
 [[package]]
 name = "lock_api"
@@ -423,9 +423,9 @@ dependencies = [
 
 [[package]]
 name = "synstructure"
-version = "0.12.4"
+version = "0.12.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b834f2d66f734cb897113e34aaff2f1ab4719ca946f9a7358dba8f8064148701"
+checksum = "474aaa926faa1603c40b7885a9eaea29b444d1cb2850cb7c0e37bb1a4182f4fa"
 dependencies = [
  "proc-macro2",
  "quote",
