@@ -19,4 +19,4 @@ crate-type = ["cdylib"]
 jrsonnet-evaluator = "0.4.2"
 jrsonnet-gc = "0.4.2"
 jrsonnet-parser = "0.4.2"
-pyo3 = { version = "0.14.1", features = ["abi3-py36", "extension-module"] }
+pyo3 = { version = "0.15.0", features = ["abi3-py36", "extension-module"] }
