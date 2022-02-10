@@ -347,7 +347,7 @@ dependencies = [
 
 [[package]]
 name = "rjsonnet"
-version = "0.4.3"
+version = "0.4.4"
 dependencies = [
  "jrsonnet-evaluator",
  "jrsonnet-gc",
