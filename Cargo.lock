@@ -80,8 +80,7 @@ checksum = "1aab8fc367588b89dcee83ab0fd66b72b50b72fa1904d7095045ace2b0c81c35"
 [[package]]
 name = "jrsonnet-evaluator"
 version = "0.4.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fee60406dac44a01b37e120b43adb062047251e195db15392b825f6bdc948712"
+source = "git+https://github.com/CertainLach/jrsonnet.git#e1fb5e1edb6f4935484bb3073564c8808e7fafac"
 dependencies = [
  "annotate-snippets",
  "base64",
@@ -123,8 +122,7 @@ dependencies = [
 [[package]]
 name = "jrsonnet-interner"
 version = "0.4.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e5ff75843e778244f3476800e6f492950a6ecee1d9308019764983d311620bf9"
+source = "git+https://github.com/CertainLach/jrsonnet.git#e1fb5e1edb6f4935484bb3073564c8808e7fafac"
 dependencies = [
  "jrsonnet-gc",
  "rustc-hash",
@@ -134,8 +132,7 @@ dependencies = [
 [[package]]
 name = "jrsonnet-parser"
 version = "0.4.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "daaad69b21c1dba904f3bb1640e02f8f60c5cd4eae8c9bc035b38a83324cdf45"
+source = "git+https://github.com/CertainLach/jrsonnet.git#e1fb5e1edb6f4935484bb3073564c8808e7fafac"
 dependencies = [
  "jrsonnet-gc",
  "jrsonnet-interner",
@@ -147,14 +144,12 @@ dependencies = [
 [[package]]
 name = "jrsonnet-stdlib"
 version = "0.4.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "840295ba3a8d65bf71e57a57acbef4c77d11c543739cfded27f91feef239f80e"
+source = "git+https://github.com/CertainLach/jrsonnet.git#e1fb5e1edb6f4935484bb3073564c8808e7fafac"
 
 [[package]]
 name = "jrsonnet-types"
 version = "0.4.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "909b38de99711ef357a514af1ed112e6cf411ab8b204cc92507b6e219e65fe5c"
+source = "git+https://github.com/CertainLach/jrsonnet.git#e1fb5e1edb6f4935484bb3073564c8808e7fafac"
 dependencies = [
  "jrsonnet-gc",
  "peg",
@@ -162,9 +157,9 @@ dependencies = [
 
 [[package]]
 name = "libc"
-version = "0.2.117"
+version = "0.2.118"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e74d72e0f9b65b5b4ca49a346af3976df0f9c61d550727f349ecd559f251a26c"
+checksum = "06e509672465a0504304aa87f9f176f2b2b716ed8fb105ebe5c02dc6dce96a94"
 
 [[package]]
 name = "lock_api"
@@ -395,9 +390,9 @@ dependencies = [
 
 [[package]]
 name = "serde_json"
-version = "1.0.78"
+version = "1.0.79"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d23c1ba4cf0efd44be32017709280b32d1cea5c3f1275c3b6d9e8bc54f758085"
+checksum = "8e8d9fa5c3b304765ce1fd9c4c8a3de2c8db365a5b91be52f186efc675681d95"
 dependencies = [
  "itoa",
  "ryu",

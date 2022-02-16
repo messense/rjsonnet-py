@@ -20,3 +20,7 @@ jrsonnet-evaluator = "0.4.2"
 jrsonnet-gc = "0.4.2"
 jrsonnet-parser = "0.4.2"
 pyo3 = { version = "0.15.1", features = ["abi3-py36", "extension-module"] }
+
+[patch.crates-io]
+jrsonnet-evaluator = { git = "https://github.com/CertainLach/jrsonnet.git" }
+jrsonnet-parser = { git = "https://github.com/CertainLach/jrsonnet.git" }
