@@ -1,6 +1,6 @@
 [package]
 name = "rjsonnet"
-version = "0.4.4"
+version = "0.4.5"
 authors = ["messense <messense@icloud.com>"]
 edition = "2018"
 description = "Python bindings to Rust jrsonnet crate"
