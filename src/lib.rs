@@ -67,17 +67,17 @@ impl ImportResolver for PythonImportResolver {
 }
 
 fn pyobject_to_val(py: Python, obj: PyObject) -> PyResult<Val> {
-    return if let Ok(s) = obj.cast_as::<PyString>(py) {
+    return if let Ok(s) = obj.downcast::<PyString>(py) {
         s.to_str().map(|s| Val::Str(s.into()))
-    } else if let Ok(b) = obj.cast_as::<PyBool>(py) {
+    } else if let Ok(b) = obj.downcast::<PyBool>(py) {
         Ok(Val::Bool(b.is_true()))
-    } else if let Ok(f) = obj.cast_as::<PyFloat>(py) {
+    } else if let Ok(f) = obj.downcast::<PyFloat>(py) {
         Ok(Val::Num(f.value() as _))
     } else if let Ok(l) = obj.extract::<u64>(py) {
         Ok(Val::Num(l as _))
     } else if obj.is_none(py) {
         Ok(Val::Null)
-    } else if let Ok(seq) = obj.cast_as::<PySequence>(py) {
+    } else if let Ok(seq) = obj.downcast::<PySequence>(py) {
         let len = seq.len()?;
         let mut arr = Vec::with_capacity(len as usize);
         for i in 0..len {
@@ -85,7 +85,7 @@ fn pyobject_to_val(py: Python, obj: PyObject) -> PyResult<Val> {
             arr.push(pyobject_to_val(py, item.into_py(py))?);
         }
         Ok(Val::Arr(ArrValue::Eager(Gc::new(arr))))
-    } else if let Ok(d) = obj.cast_as::<PyDict>(py) {
+    } else if let Ok(d) = obj.downcast::<PyDict>(py) {
         let mut map = ObjValue::new_empty();
         for (k, v) in d {
             let k = k.extract::<String>()?;
@@ -216,7 +216,7 @@ fn create_evaluation_state(
     }
 
     for (name, (args, func)) in native_callbacks.into_iter() {
-        let args = args.cast_as::<PyTuple>(py)?;
+        let args = args.downcast::<PyTuple>(py)?;
         let mut params = Vec::with_capacity(args.len());
         for arg in args {
             let param = arg.extract::<&str>()?;
@@ -264,19 +264,20 @@ impl LibraryPath {
 
 /// Evaluate jsonnet file
 #[allow(clippy::too_many_arguments)]
-#[pyfunction(
-    jpathdir = "None",
-    max_stack = "500",
-    gc_min_objects = "1000",
-    gc_growth_trigger = "2.0",
-    ext_vars = "HashMap::new()",
-    ext_codes = "HashMap::new()",
-    tla_vars = "HashMap::new()",
-    tla_codes = "HashMap::new()",
-    max_trace = "20",
-    import_callback = "None",
-    native_callbacks = "HashMap::new()"
-)]
+#[pyfunction(signature = (
+    filename,
+    jpathdir = None,
+    max_stack = 500,
+    gc_min_objects = 1000,
+    gc_growth_trigger = 2.0,
+    ext_vars = HashMap::new(),
+    ext_codes = HashMap::new(),
+    tla_vars = HashMap::new(),
+    tla_codes = HashMap::new(),
+    max_trace = 20,
+    import_callback = None,
+    native_callbacks = HashMap::new()
+))]
 fn evaluate_file(
     py: Python,
     filename: &str,
@@ -317,19 +318,21 @@ fn evaluate_file(
 
 /// Evaluate jsonnet code snippet
 #[allow(clippy::too_many_arguments)]
-#[pyfunction(
-    jpathdir = "None",
-    max_stack = "500",
-    gc_min_objects = "1000",
-    gc_growth_trigger = "2.0",
-    ext_vars = "HashMap::new()",
-    ext_codes = "HashMap::new()",
-    tla_vars = "HashMap::new()",
-    tla_codes = "HashMap::new()",
-    max_trace = "20",
-    import_callback = "None",
-    native_callbacks = "HashMap::new()"
-)]
+#[pyfunction(signature = (
+    filename,
+    src,
+    jpathdir = None,
+    max_stack = 500,
+    gc_min_objects = 1000,
+    gc_growth_trigger = 2.0,
+    ext_vars = HashMap::new(),
+    ext_codes = HashMap::new(),
+    tla_vars = HashMap::new(),
+    tla_codes = HashMap::new(),
+    max_trace = 20,
+    import_callback = None,
+    native_callbacks = HashMap::new()
+))]
 fn evaluate_snippet(
     py: Python,
     filename: &str,

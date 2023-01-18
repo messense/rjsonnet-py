@@ -19,7 +19,7 @@ crate-type = ["cdylib"]
 jrsonnet-evaluator = "0.4.2"
 jrsonnet-gc = "0.4.2"
 jrsonnet-parser = "0.4.2"
-pyo3 = { version = "0.17.3", features = ["abi3-py37", "extension-module"] }
+pyo3 = { version = "0.18.0", features = ["abi3-py37", "extension-module"] }
 
 [patch.crates-io]
 jrsonnet-evaluator = { git = "https://github.com/CertainLach/jrsonnet.git" }
