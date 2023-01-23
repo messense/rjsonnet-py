@@ -14,6 +14,7 @@ def evaluate_file(
     max_trace: int = 20,
     import_callback: Optional[Callable[[str, str], Tuple[str, Optional[str]]]] = None,
     native_callbacks: Dict[str, Tuple[str, Callable]] = {},
+    preserve_order: bool = False,
 ) -> str: ...
 
 
@@ -31,4 +32,5 @@ def evaluate_snippet(
     max_trace: int = 20,
     import_callback: Optional[Callable[[str, str], Tuple[str, Optional[str]]]] = None,
     native_callbacks: Dict[str, Tuple[str, Callable]] = {},
+    preserve_order: bool = False,
 ) -> str: ...
