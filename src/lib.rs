@@ -131,7 +131,7 @@ fn pyobject_to_val(py: Python, obj: PyObject) -> PyResult<Val> {
     };
 }
 
-fn val_to_pyobject(py: Python, val: &Val) -> PyObject {
+fn val_to_pyobject(py: Python, val: &Val, preserve_order: bool) -> PyObject {
     match val {
         Val::Bool(b) => b.into_py(py),
         Val::Null => py.None(),
@@ -140,15 +140,19 @@ fn val_to_pyobject(py: Python, val: &Val) -> PyObject {
         Val::Arr(a) => {
             let arr = PyList::empty(py);
             for item in a.iter() {
-                arr.append(val_to_pyobject(py, &item.unwrap())).unwrap();
+                arr.append(val_to_pyobject(py, &item.unwrap(), preserve_order))
+                    .unwrap();
             }
             arr.into_py(py)
         }
         Val::Obj(o) => {
             let dict = PyDict::new(py);
-            for field in o.fields() {
+            for field in o.fields(preserve_order) {
                 let k = field.to_string();
-                let v = o.get(field).unwrap().map(|x| val_to_pyobject(py, &x));
+                let v = o
+                    .get(field)
+                    .unwrap()
+                    .map(|x| val_to_pyobject(py, &x, preserve_order));
                 dict.set_item(k, v).unwrap();
             }
             dict.into_py(py)
@@ -163,12 +167,17 @@ struct JsonnetNativeCallbackHandler {
     name: String,
     #[trace(skip)]
     func: PyObject,
+    #[trace(skip)]
+    preserve_order: bool,
 }
 
 impl NativeCallbackHandler for JsonnetNativeCallbackHandler {
     fn call(&self, args: &[Val]) -> Result<Val, Error> {
         Python::with_gil(|py| {
-            let args: Vec<_> = args.iter().map(|v| val_to_pyobject(py, v)).collect();
+            let args: Vec<_> = args
+                .iter()
+                .map(|v| val_to_pyobject(py, v, self.preserve_order))
+                .collect();
             let err = match self.func.call(py, PyTuple::new(py, args), None) {
                 Ok(obj) => match pyobject_to_val(py, obj) {
                     Ok(val) => return Ok(val),
@@ -206,6 +215,7 @@ impl VirtualMachine {
         max_trace: usize,
         import_callback: Option<PyObject>,
         native_callbacks: HashMap<String, (PyObject, PyObject)>,
+        preserve_order: bool,
     ) -> PyResult<Self> {
         let state = State::default();
         set_stack_depth_limit(max_stack);
@@ -273,7 +283,14 @@ impl VirtualMachine {
             context_initializer.add_native(
                 name.clone().into(),
                 #[allow(deprecated)]
-                NativeCallback::new(params, JsonnetNativeCallbackHandler { name, func }),
+                NativeCallback::new(
+                    params,
+                    JsonnetNativeCallbackHandler {
+                        name,
+                        func,
+                        preserve_order,
+                    },
+                ),
             );
         }
 
@@ -345,7 +362,8 @@ impl LibraryPath {
     tla_codes = HashMap::new(),
     max_trace = 20,
     import_callback = None,
-    native_callbacks = HashMap::new()
+    native_callbacks = HashMap::new(),
+    preserve_order = false,
 ))]
 fn evaluate_file(
     py: Python,
@@ -361,6 +379,7 @@ fn evaluate_file(
     max_trace: usize,
     import_callback: Option<PyObject>,
     native_callbacks: HashMap<String, (PyObject, PyObject)>,
+    preserve_order: bool,
 ) -> PyResult<String> {
     let vm = VirtualMachine::new(
         py,
@@ -373,6 +392,7 @@ fn evaluate_file(
         max_trace,
         import_callback,
         native_callbacks,
+        preserve_order,
     )?;
 
     let result = vm
@@ -396,7 +416,8 @@ fn evaluate_file(
     tla_codes = HashMap::new(),
     max_trace = 20,
     import_callback = None,
-    native_callbacks = HashMap::new()
+    native_callbacks = HashMap::new(),
+    preserve_order = false,
 ))]
 fn evaluate_snippet(
     py: Python,
@@ -413,6 +434,7 @@ fn evaluate_snippet(
     max_trace: usize,
     import_callback: Option<PyObject>,
     native_callbacks: HashMap<String, (PyObject, PyObject)>,
+    preserve_order: bool,
 ) -> PyResult<String> {
     let vm = VirtualMachine::new(
         py,
@@ -425,6 +447,7 @@ fn evaluate_snippet(
         max_trace,
         import_callback,
         native_callbacks,
+        preserve_order,
     )?;
 
     let result = vm

@@ -26,13 +26,14 @@ Keyword arguments to these functions are used to control the virtual machine. Th
 * `max_stack`   (number)
 * `gc_min_objects`   (number, ignored)
 * `gc_growth_trigger`   (number, ignored)
-* `ext_vars`   (dict: string to string)
-* `ext_codes`   (dict string to string)
-* `tla_vars`   (dict string to string)
-* `tla_codes`   (dict string to string)
+* `ext_vars`   (dict, string to string)
+* `ext_codes`   (dict, string to string)
+* `tla_vars`   (dict, string to string)
+* `tla_codes`   (dict, string to string)
 * `max_trace`   (number)
 * `import_callback`   (see example in [tests/](./tests/))
 * `native_callbacks`   (see example in [tests/](./tests/))
+* `preserve_order`   (bool, preserve object field order during manifestification)
 
 The argument `import_callback` can be used to pass a callable, to trap the Jsonnet `import` and `importstr` constructs.
 This allows, e.g., reading files out of archives or implementing library search paths.
