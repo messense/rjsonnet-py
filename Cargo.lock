@@ -8,7 +8,7 @@ version = "0.8.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bf6ccdb167abbf410dcb915cabd428929d7f6a04980b54a11f26a39f1c7f7107"
 dependencies = [
- "cfg-if 1.0.0",
+ "cfg-if",
  "once_cell",
  "version_check",
 ]
@@ -52,24 +52,9 @@ dependencies = [
 
 [[package]]
 name = "cfg-if"
-version = "0.1.10"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4785bdd1c96b2a846b2bd7cc02e86b6b3dbf14e7e53446c4f54c92a361040822"
-
-[[package]]
-name = "cfg-if"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
-
-[[package]]
-name = "cloudabi"
-version = "0.0.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ddfc5b9aa5d4507acaf872de71051dfd0e309860e88966e1051e462a077aac4f"
-dependencies = [
- "bitflags",
-]
 
 [[package]]
 name = "cpufeatures"
@@ -150,7 +135,7 @@ checksum = "fad582f4b9e86b6caa621cabeb0963332d92eea04729ab12892c2533951e6440"
 [[package]]
 name = "jrsonnet-evaluator"
 version = "0.5.0-pre6"
-source = "git+https://github.com/CertainLach/jrsonnet.git#ed1156c14eb7f49e001cb800da3e8bfe0eeaf0a6"
+source = "git+https://github.com/CertainLach/jrsonnet.git#153383ce07c147314f7250b7a9673599e5bb7c4f"
 dependencies = [
  "annotate-snippets",
  "hashbrown 0.13.2",
@@ -169,19 +154,19 @@ dependencies = [
 
 [[package]]
 name = "jrsonnet-gcmodule"
-version = "0.3.4"
+version = "0.3.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "22d4e1572e4b61e4f5deb3701312a330df0e69b48805a540d740e5e53ac8c78a"
+checksum = "35243aa6a013032e9469f3798c54e2ca7af44973b1eafdc924cb6ca351a71f72"
 dependencies = [
  "jrsonnet-gcmodule-derive",
- "parking_lot 0.10.2",
+ "parking_lot",
 ]
 
 [[package]]
 name = "jrsonnet-gcmodule-derive"
-version = "0.3.4"
+version = "0.3.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ae2f3bf7d38e0a9098b5b9062a7d9e7a97a206bc3c91118d76e7e37f2e0f1202"
+checksum = "96206bf4ae74d5257bbbd23113bfe67b09e8973de3843b728c3ce289dee86eda"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -191,7 +176,7 @@ dependencies = [
 [[package]]
 name = "jrsonnet-interner"
 version = "0.5.0-pre6"
-source = "git+https://github.com/CertainLach/jrsonnet.git#ed1156c14eb7f49e001cb800da3e8bfe0eeaf0a6"
+source = "git+https://github.com/CertainLach/jrsonnet.git#153383ce07c147314f7250b7a9673599e5bb7c4f"
 dependencies = [
  "hashbrown 0.13.2",
  "jrsonnet-gcmodule",
@@ -202,7 +187,7 @@ dependencies = [
 [[package]]
 name = "jrsonnet-macros"
 version = "0.5.0-pre6"
-source = "git+https://github.com/CertainLach/jrsonnet.git#ed1156c14eb7f49e001cb800da3e8bfe0eeaf0a6"
+source = "git+https://github.com/CertainLach/jrsonnet.git#153383ce07c147314f7250b7a9673599e5bb7c4f"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -212,7 +197,7 @@ dependencies = [
 [[package]]
 name = "jrsonnet-parser"
 version = "0.5.0-pre6"
-source = "git+https://github.com/CertainLach/jrsonnet.git#ed1156c14eb7f49e001cb800da3e8bfe0eeaf0a6"
+source = "git+https://github.com/CertainLach/jrsonnet.git#153383ce07c147314f7250b7a9673599e5bb7c4f"
 dependencies = [
  "jrsonnet-gcmodule",
  "jrsonnet-interner",
@@ -224,7 +209,7 @@ dependencies = [
 [[package]]
 name = "jrsonnet-stdlib"
 version = "0.5.0-pre6"
-source = "git+https://github.com/CertainLach/jrsonnet.git#ed1156c14eb7f49e001cb800da3e8bfe0eeaf0a6"
+source = "git+https://github.com/CertainLach/jrsonnet.git#153383ce07c147314f7250b7a9673599e5bb7c4f"
 dependencies = [
  "base64",
  "jrsonnet-evaluator",
@@ -242,7 +227,7 @@ dependencies = [
 [[package]]
 name = "jrsonnet-types"
 version = "0.5.0-pre6"
-source = "git+https://github.com/CertainLach/jrsonnet.git#ed1156c14eb7f49e001cb800da3e8bfe0eeaf0a6"
+source = "git+https://github.com/CertainLach/jrsonnet.git#153383ce07c147314f7250b7a9673599e5bb7c4f"
 dependencies = [
  "jrsonnet-gcmodule",
  "peg",
@@ -259,15 +244,6 @@ name = "linked-hash-map"
 version = "0.5.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0717cef1bc8b636c6e1c1bbdefc09e6322da8a9321966e8928ef80d20f7f770f"
-
-[[package]]
-name = "lock_api"
-version = "0.3.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c4da24a77a3d8a6d4862d95f72e6fdb9c09a643ecdb402d754004a557f2bec75"
-dependencies = [
- "scopeguard",
-]
 
 [[package]]
 name = "lock_api"
@@ -302,36 +278,12 @@ checksum = "6f61fba1741ea2b3d6a1e3178721804bb716a68a6aeba1149b5d52e3d464ea66"
 
 [[package]]
 name = "parking_lot"
-version = "0.10.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d3a704eb390aafdc107b0e392f56a82b668e3a71366993b5340f5833fd62505e"
-dependencies = [
- "lock_api 0.3.4",
- "parking_lot_core 0.7.3",
-]
-
-[[package]]
-name = "parking_lot"
 version = "0.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3742b2c103b9f06bc9fff0a37ff4912935851bee6d36f3c02bcc755bcfec228f"
 dependencies = [
- "lock_api 0.4.9",
- "parking_lot_core 0.9.6",
-]
-
-[[package]]
-name = "parking_lot_core"
-version = "0.7.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b93f386bb233083c799e6e642a9d73db98c24a5deeb95ffc85bf281255dffc98"
-dependencies = [
- "cfg-if 0.1.10",
- "cloudabi",
- "libc",
- "redox_syscall 0.1.57",
- "smallvec",
- "winapi",
+ "lock_api",
+ "parking_lot_core",
 ]
 
 [[package]]
@@ -340,9 +292,9 @@ version = "0.9.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ba1ef8814b5c993410bb3adfad7a5ed269563e4a2f90c41f5d85be7fb47133bf"
 dependencies = [
- "cfg-if 1.0.0",
+ "cfg-if",
  "libc",
- "redox_syscall 0.2.16",
+ "redox_syscall",
  "smallvec",
  "windows-sys",
 ]
@@ -395,11 +347,11 @@ version = "0.18.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ccd4149c8c3975099622b4e1962dac27565cf5663b76452c3e2b66e0b6824277"
 dependencies = [
- "cfg-if 1.0.0",
+ "cfg-if",
  "indoc",
  "libc",
  "memoffset",
- "parking_lot 0.12.1",
+ "parking_lot",
  "pyo3-build-config",
  "pyo3-ffi",
  "pyo3-macros",
@@ -457,12 +409,6 @@ checksum = "8856d8364d252a14d474036ea1358d63c9e6965c8e5c1885c18f73d70bff9c7b"
 dependencies = [
  "proc-macro2",
 ]
-
-[[package]]
-name = "redox_syscall"
-version = "0.1.57"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "41cc0f7e4d5d4544e8861606a285bb08d3e70712ccc7d2b84d7c0ccfaf4b05ce"
 
 [[package]]
 name = "redox_syscall"
@@ -537,7 +483,7 @@ version = "0.10.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "82e6b795fe2e3b1e845bafcb27aa35405c4d47cdfc92af5fc8d3002f76cebdc0"
 dependencies = [
- "cfg-if 1.0.0",
+ "cfg-if",
  "cpufeatures",
  "digest",
 ]
