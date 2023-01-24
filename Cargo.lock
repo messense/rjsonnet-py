@@ -135,7 +135,7 @@ checksum = "fad582f4b9e86b6caa621cabeb0963332d92eea04729ab12892c2533951e6440"
 [[package]]
 name = "jrsonnet-evaluator"
 version = "0.5.0-pre6"
-source = "git+https://github.com/CertainLach/jrsonnet.git#153383ce07c147314f7250b7a9673599e5bb7c4f"
+source = "git+https://github.com/CertainLach/jrsonnet.git#45d6bc3e2a43adbeb1a9a75c52cee0d72780112a"
 dependencies = [
  "annotate-snippets",
  "hashbrown 0.13.2",
@@ -176,7 +176,7 @@ dependencies = [
 [[package]]
 name = "jrsonnet-interner"
 version = "0.5.0-pre6"
-source = "git+https://github.com/CertainLach/jrsonnet.git#153383ce07c147314f7250b7a9673599e5bb7c4f"
+source = "git+https://github.com/CertainLach/jrsonnet.git#45d6bc3e2a43adbeb1a9a75c52cee0d72780112a"
 dependencies = [
  "hashbrown 0.13.2",
  "jrsonnet-gcmodule",
@@ -187,7 +187,7 @@ dependencies = [
 [[package]]
 name = "jrsonnet-macros"
 version = "0.5.0-pre6"
-source = "git+https://github.com/CertainLach/jrsonnet.git#153383ce07c147314f7250b7a9673599e5bb7c4f"
+source = "git+https://github.com/CertainLach/jrsonnet.git#45d6bc3e2a43adbeb1a9a75c52cee0d72780112a"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -197,7 +197,7 @@ dependencies = [
 [[package]]
 name = "jrsonnet-parser"
 version = "0.5.0-pre6"
-source = "git+https://github.com/CertainLach/jrsonnet.git#153383ce07c147314f7250b7a9673599e5bb7c4f"
+source = "git+https://github.com/CertainLach/jrsonnet.git#45d6bc3e2a43adbeb1a9a75c52cee0d72780112a"
 dependencies = [
  "jrsonnet-gcmodule",
  "jrsonnet-interner",
@@ -209,7 +209,7 @@ dependencies = [
 [[package]]
 name = "jrsonnet-stdlib"
 version = "0.5.0-pre6"
-source = "git+https://github.com/CertainLach/jrsonnet.git#153383ce07c147314f7250b7a9673599e5bb7c4f"
+source = "git+https://github.com/CertainLach/jrsonnet.git#45d6bc3e2a43adbeb1a9a75c52cee0d72780112a"
 dependencies = [
  "base64",
  "jrsonnet-evaluator",
@@ -227,7 +227,7 @@ dependencies = [
 [[package]]
 name = "jrsonnet-types"
 version = "0.5.0-pre6"
-source = "git+https://github.com/CertainLach/jrsonnet.git#153383ce07c147314f7250b7a9673599e5bb7c4f"
+source = "git+https://github.com/CertainLach/jrsonnet.git#45d6bc3e2a43adbeb1a9a75c52cee0d72780112a"
 dependencies = [
  "jrsonnet-gcmodule",
  "peg",
