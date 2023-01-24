@@ -21,3 +21,7 @@ jrsonnet-parser = { git = "https://github.com/CertainLach/jrsonnet.git" }
 jrsonnet-stdlib = { git = "https://github.com/CertainLach/jrsonnet.git", features = ["exp-preserve-order"] }
 jrsonnet-gcmodule = "0.3.5"
 pyo3 = { version = "0.18.0", features = ["abi3-py37", "extension-module"] }
+
+[features]
+default = []
+nightly = ["jrsonnet-evaluator/nightly"]
