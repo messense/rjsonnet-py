@@ -16,9 +16,9 @@ name = "rjsonnet"
 crate-type = ["cdylib"]
 
 [dependencies]
-jrsonnet-evaluator = { git = "https://github.com/CertainLach/jrsonnet.git", features = ["exp-preserve-order", "exp-destruct", "exp-object-iteration"] }
-jrsonnet-parser = { git = "https://github.com/CertainLach/jrsonnet.git" }
-jrsonnet-stdlib = { git = "https://github.com/CertainLach/jrsonnet.git", features = ["exp-preserve-order"] }
+jrsonnet-evaluator = { version = "0.5.0-pre9", features = ["exp-preserve-order", "exp-destruct", "exp-object-iteration"] }
+jrsonnet-parser = { version = "0.5.0-pre9" }
+jrsonnet-stdlib = { version = "0.5.0-pre9", features = ["exp-preserve-order"] }
 jrsonnet-gcmodule = "0.3.5"
 pyo3 = { version = "0.18.0", features = ["abi3-py37", "extension-module"] }
 
