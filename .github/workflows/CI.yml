@@ -29,7 +29,8 @@ jobs:
       - name: Build wheels - universal2
         uses: messense/maturin-action@v1
         with:
-          args: --release --universal2 --out dist --features nightly
+          target: universal2-apple-darwin
+          args: --release --out dist --features nightly
       - name: Install built wheel - universal2
         run: |
           pip install rjsonnet --no-index --find-links dist --force-reinstall
