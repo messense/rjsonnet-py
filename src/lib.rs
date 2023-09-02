@@ -1,8 +1,8 @@
+use std::any::Any;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::env;
 use std::path::PathBuf;
-use std::{any::Any, borrow::Cow};
 
 use jrsonnet_evaluator::apply_tla;
 use jrsonnet_evaluator::{
@@ -278,10 +278,10 @@ impl VirtualMachine {
             let mut params = Vec::with_capacity(args.len());
             for arg in args {
                 let param = arg.extract::<String>()?;
-                params.push(Cow::Owned(param));
+                params.push(param);
             }
             context_initializer.add_native(
-                name.clone().into(),
+                name.clone(),
                 #[allow(deprecated)]
                 NativeCallback::new(
                     params,
