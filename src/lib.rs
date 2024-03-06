@@ -294,10 +294,12 @@ impl VirtualMachine {
             );
         }
 
+        let manifest_format = JsonFormat::cli(4, preserve_order);
+
         state.settings_mut().context_initializer = tb!(context_initializer);
         Ok(Self {
             state,
-            manifest_format: Box::new(JsonFormat::default()),
+            manifest_format: Box::new(manifest_format),
             trace_format: Box::new(trace_format),
             tla_args,
         })
