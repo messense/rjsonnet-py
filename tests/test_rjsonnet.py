@@ -1,3 +1,4 @@
+import json
 import os
 
 import pytest
@@ -106,3 +107,10 @@ def test_import_callback_error():
             import_callback=import_callback_2,
             native_callbacks=native_callbacks,
         )
+
+def test_preserve_order():
+    code = "{c: 1, a: 2, b: 3}"
+    json_str = rjsonnet.evaluate_snippet("test", code, preserve_order=True)
+    # as of python 3.6 dicts are ordered, and the json 
+    obj = json.loads(json_str)
+    assert list(obj) == ['c', 'a', 'b']
