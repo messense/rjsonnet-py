@@ -16,11 +16,11 @@ name = "rjsonnet"
 crate-type = ["cdylib"]
 
 [dependencies]
-jrsonnet-evaluator = { version = "0.5.0-pre9", features = ["exp-preserve-order", "exp-destruct", "exp-object-iteration"] }
-jrsonnet-parser = { version = "0.5.0-pre9" }
-jrsonnet-stdlib = { version = "0.5.0-pre9", features = ["exp-preserve-order"] }
-jrsonnet-gcmodule = "0.3.5"
-pyo3 = { version = "0.19.2", features = ["abi3-py37", "extension-module"] }
+jrsonnet-evaluator = { version = "0.5.0-pre95", features = ["exp-preserve-order", "exp-destruct", "exp-object-iteration"] }
+jrsonnet-parser = { version = "0.5.0-pre95" }
+jrsonnet-stdlib = { version = "0.5.0-pre95", features = ["exp-preserve-order"] }
+jrsonnet-gcmodule = "0.3.6"
+pyo3 = { version = "0.21.1", features = ["abi3-py37", "extension-module"] }
 
 [features]
 default = []

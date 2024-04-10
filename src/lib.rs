@@ -58,21 +58,23 @@ impl ImportResolver for PythonImportResolver {
             ))));
         };
         let (resolved, content) =
-            Python::with_gil(|py| match self.callback.call(py, (base, path), None) {
-                Ok(obj) => obj.extract::<(String, Option<String>)>(py).map_err(|err| {
-                    let err_msg = err.to_string();
-                    err.restore(py);
-                    ImportCallbackError(format!("import_callback error: {}", err_msg))
-                }),
-                Err(err) => {
-                    let err_msg = err.to_string();
-                    err.restore(py);
-                    Err(ImportCallbackError(format!(
-                        "import_callback error: {}",
-                        err_msg
-                    )))
-                }
-            })?;
+            Python::with_gil(
+                |py| match self.callback.call_bound(py, (base, path), None) {
+                    Ok(obj) => obj.extract::<(String, Option<String>)>(py).map_err(|err| {
+                        let err_msg = err.to_string();
+                        err.restore(py);
+                        ImportCallbackError(format!("import_callback error: {}", err_msg))
+                    }),
+                    Err(err) => {
+                        let err_msg = err.to_string();
+                        err.restore(py);
+                        Err(ImportCallbackError(format!(
+                            "import_callback error: {}",
+                            err_msg
+                        )))
+                    }
+                },
+            )?;
         if let Some(content) = content {
             let resolved = SourcePath::new(SourceFile::new(PathBuf::from(resolved)));
             let mut out = self.out.borrow_mut();
@@ -98,17 +100,19 @@ impl ImportResolver for PythonImportResolver {
 }
 
 fn pyobject_to_val(py: Python, obj: PyObject) -> PyResult<Val> {
-    return if let Ok(s) = obj.downcast::<PyString>(py) {
-        s.to_str().map(|s| Val::Str(StrValue::Flat(s.into())))
-    } else if let Ok(b) = obj.downcast::<PyBool>(py) {
+    return if let Ok(s) = obj.downcast_bound::<PyString>(py) {
+        s.as_gil_ref()
+            .to_str()
+            .map(|s| Val::Str(StrValue::Flat(s.into())))
+    } else if let Ok(b) = obj.downcast_bound::<PyBool>(py) {
         Ok(Val::Bool(b.is_true()))
-    } else if let Ok(f) = obj.downcast::<PyFloat>(py) {
+    } else if let Ok(f) = obj.downcast_bound::<PyFloat>(py) {
         Ok(Val::Num(f.value() as _))
     } else if let Ok(l) = obj.extract::<u64>(py) {
         Ok(Val::Num(l as _))
     } else if obj.is_none(py) {
         Ok(Val::Null)
-    } else if let Ok(seq) = obj.downcast::<PySequence>(py) {
+    } else if let Ok(seq) = obj.downcast_bound::<PySequence>(py) {
         let len = seq.len()?;
         let mut arr = Vec::with_capacity(len);
         for i in 0..len {
@@ -116,7 +120,7 @@ fn pyobject_to_val(py: Python, obj: PyObject) -> PyResult<Val> {
             arr.push(pyobject_to_val(py, item.into_py(py))?);
         }
         Ok(Val::Arr(ArrValue::eager(arr)))
-    } else if let Ok(d) = obj.downcast::<PyDict>(py) {
+    } else if let Ok(d) = obj.downcast_bound::<PyDict>(py) {
         let mut map = ObjValue::new_empty();
         for (k, v) in d {
             let k = k.extract::<String>()?;
@@ -138,7 +142,7 @@ fn val_to_pyobject(py: Python, val: &Val, preserve_order: bool) -> PyObject {
         Val::Str(s) => s.clone().into_flat().into_py(py),
         Val::Num(n) => n.into_py(py),
         Val::Arr(a) => {
-            let arr = PyList::empty(py);
+            let arr = PyList::empty_bound(py);
             for item in a.iter() {
                 arr.append(val_to_pyobject(py, &item.unwrap(), preserve_order))
                     .unwrap();
@@ -146,7 +150,7 @@ fn val_to_pyobject(py: Python, val: &Val, preserve_order: bool) -> PyObject {
             arr.into_py(py)
         }
         Val::Obj(o) => {
-            let dict = PyDict::new(py);
+            let dict = PyDict::new_bound(py);
             for field in o.fields(preserve_order) {
                 let k = field.to_string();
                 let v = o
@@ -178,7 +182,7 @@ impl NativeCallbackHandler for JsonnetNativeCallbackHandler {
                 .iter()
                 .map(|v| val_to_pyobject(py, v, self.preserve_order))
                 .collect();
-            let err = match self.func.call(py, PyTuple::new(py, args), None) {
+            let err = match self.func.call_bound(py, PyTuple::new_bound(py, args), None) {
                 Ok(obj) => match pyobject_to_val(py, obj) {
                     Ok(val) => return Ok(val),
                     Err(err) => err,
@@ -260,7 +264,7 @@ impl VirtualMachine {
         }
 
         if let Some(import_callback) = import_callback {
-            if !import_callback.as_ref(py).is_callable() {
+            if !import_callback.bind(py).is_callable() {
                 return Err(PyTypeError::new_err("import_callback must be callable"));
             }
             let import_resolver = PythonImportResolver {
@@ -274,7 +278,7 @@ impl VirtualMachine {
         }
 
         for (name, (args, func)) in native_callbacks.into_iter() {
-            let args = args.downcast::<PyTuple>(py)?;
+            let args = args.downcast_bound::<PyTuple>(py)?;
             let mut params = Vec::with_capacity(args.len());
             for arg in args {
                 let param = arg.extract::<String>()?;
@@ -460,7 +464,7 @@ fn evaluate_snippet(
 
 /// Python bindings to Rust jrsonnet crate
 #[pymodule]
-fn rjsonnet(_py: Python, m: &PyModule) -> PyResult<()> {
+fn rjsonnet(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add("__version__", env!("CARGO_PKG_VERSION"))?;
     m.add_function(wrap_pyfunction!(evaluate_file, m)?)?;
     m.add_function(wrap_pyfunction!(evaluate_snippet, m)?)?;
