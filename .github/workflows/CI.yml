@@ -163,8 +163,11 @@ jobs:
         options: -v ${{ github.workspace }}:/io -w /io
         run: |
           apk add py3-pip
-          pip3 install -U pip pytest
-          pip3 install rjsonnet --no-index --find-links /io/dist/ --force-reinstall
+          pip3 install -U virtualenv
+          virtualenv .venv
+          source .venv/bin/activate
+          pip install pytest
+          pip install rjsonnet --no-index --find-links /io/dist/ --force-reinstall
           cd tests && python3 -m pytest
     - name: Upload wheels
       uses: actions/upload-artifact@v3
@@ -201,9 +204,12 @@ jobs:
         githubToken: ${{ github.token }}
         install: |
           apk add py3-pip
-          pip3 install -U pip pytest
+          pip3 install -U virtualenv
         run: |
-          pip3 install rjsonnet --no-index --find-links dist/ --force-reinstall
+          virtualenv .venv
+          source .venv/bin/activate
+          pip install pytest
+          pip install rjsonnet --no-index --find-links dist/ --force-reinstall
           cd tests && python3 -m pytest
     - name: Upload wheels
       uses: actions/upload-artifact@v3
