@@ -36,9 +36,9 @@ jobs:
           pip install rjsonnet --no-index --find-links dist --force-reinstall
           cd tests && pytest
       - name: Upload wheels
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: wheels
+          name: wheels-macos
           path: dist
 
   windows:
@@ -64,9 +64,9 @@ jobs:
           pip install pytest
           cd tests && pytest
       - name: Upload wheels
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: wheels
+          name: wheels-windows-${{ matrix.target }}
           path: dist
 
   linux:
@@ -93,9 +93,9 @@ jobs:
         pip install pytest
         cd tests && pytest
     - name: Upload wheels
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
-        name: wheels
+        name: wheels-linux-${{ matrix.target }}
         path: dist
 
   linux-cross:
@@ -130,9 +130,9 @@ jobs:
           pip3 install rjsonnet --no-index --find-links dist/ --force-reinstall
           cd tests && pytest
     - name: Upload wheels
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
-        name: wheels
+        name: wheels-linux-${{ matrix.target }}
         path: dist
 
   musllinux:
@@ -169,9 +169,9 @@ jobs:
           pip install rjsonnet --no-index --find-links /io/dist/ --force-reinstall
           cd tests && python3 -m pytest
     - name: Upload wheels
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
-        name: wheels
+        name: wheels-${{ matrix.target }}
         path: dist
 
   musllinux-cross:
@@ -210,9 +210,9 @@ jobs:
           pip install rjsonnet --no-index --find-links dist/ --force-reinstall
           cd tests && python3 -m pytest
     - name: Upload wheels
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
-        name: wheels
+        name: wheels-${{ matrix.platform.target }}
         path: dist
 
   release:
@@ -221,12 +221,13 @@ jobs:
     if: "startsWith(github.ref, 'refs/tags/')"
     needs: [ macos, windows, linux, linux-cross, musllinux, musllinux-cross ]
     steps:
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
-          name: wheels
+          pattern: wheels-*
+          merge-multiple: true
       - uses: actions/setup-python@v5
         with:
-          python-version: 3.9
+          python-version: 3.12
       - name: Publish to PyPI
         env:
           TWINE_USERNAME: __token__
