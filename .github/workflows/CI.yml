@@ -17,18 +17,19 @@ jobs:
           python-version: 3.9
       - uses: dtolnay/rust-toolchain@nightly
       - name: Build wheels - x86_64
-        uses: messense/maturin-action@v1
+        uses: pyo3/maturin-action@v1
         with:
           target: x86_64
           args: --release --sdist --out dist --features nightly
       - name: Build wheels - universal2
-        uses: messense/maturin-action@v1
+        uses: pyo3/maturin-action@v1
         with:
           target: universal2-apple-darwin
           args: --release --out dist --features nightly
       - name: Install built wheel - universal2
         run: |
           pip install rjsonnet --no-index --find-links dist --force-reinstall
+          pip install pytest
           cd tests && pytest
       - name: Upload wheels
         uses: actions/upload-artifact@v4
@@ -49,7 +50,7 @@ jobs:
           architecture: ${{ matrix.target }}
       - uses: dtolnay/rust-toolchain@nightly
       - name: Build wheels
-        uses: messense/maturin-action@v1
+        uses: pyo3/maturin-action@v1
         with:
           target: ${{ matrix.target }}
           args: --release --out dist --features nightly
@@ -75,7 +76,7 @@ jobs:
       with:
         python-version: 3.9
     - name: Build wheels
-      uses: messense/maturin-action@v1
+      uses: pyo3/maturin-action@v1
       with:
         rust-toolchain: nightly
         target: ${{ matrix.target }}
@@ -104,7 +105,7 @@ jobs:
       with:
         python-version: 3.9
     - name: Build wheels
-      uses: messense/maturin-action@v1
+      uses: pyo3/maturin-action@v1
       with:
         rust-toolchain: nightly
         target: ${{ matrix.target }}
@@ -144,7 +145,7 @@ jobs:
         python-version: 3.9
         architecture: x64
     - name: Build wheels
-      uses: messense/maturin-action@v1
+      uses: pyo3/maturin-action@v1
       with:
         rust-toolchain: nightly
         target: ${{ matrix.target }}
@@ -184,7 +185,7 @@ jobs:
       with:
         python-version: 3.9
     - name: Build wheels
-      uses: messense/maturin-action@v1
+      uses: pyo3/maturin-action@v1
       with:
         rust-toolchain: nightly
         target: ${{ matrix.platform.target }}
