@@ -108,7 +108,7 @@ fn pyobject_to_val(py: Python, obj: PyObject) -> PyResult<Val> {
         Ok(Val::Bool(b.is_true()))
     } else if let Ok(f) = obj.downcast_bound::<PyFloat>(py) {
         Ok(Val::Num(f.value() as _))
-    } else if let Ok(l) = obj.extract::<u64>(py) {
+    } else if let Ok(l) = obj.extract::<i64>(py) {
         Ok(Val::Num(l as _))
     } else if obj.is_none(py) {
         Ok(Val::Null)

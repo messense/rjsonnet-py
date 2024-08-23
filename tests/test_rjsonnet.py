@@ -24,6 +24,7 @@ def return_types():
         "c": True,
         "d": None,
         "e": {"x": 1, "y": 2, "z": ["foo"]},
+        "f": [-1, -1.0],
     }
 
 
