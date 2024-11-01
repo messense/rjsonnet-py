@@ -13,7 +13,7 @@ def evaluate_file(
     tla_codes: Dict[str, str] = {},
     max_trace: int = 20,
     import_callback: Optional[Callable[[str, str], Tuple[str, Optional[str]]]] = None,
-    native_callbacks: Dict[str, Tuple[str, Callable]] = {},
+    native_callbacks: Dict[str, Tuple[Tuple[str, ...], Callable]] = {},
     preserve_order: bool = False,
 ) -> str: ...
 
@@ -31,6 +31,6 @@ def evaluate_snippet(
     tla_codes: Dict[str, str] = {},
     max_trace: int = 20,
     import_callback: Optional[Callable[[str, str], Tuple[str, Optional[str]]]] = None,
-    native_callbacks: Dict[str, Tuple[str, Callable]] = {},
+    native_callbacks: Dict[str, Tuple[Tuple[str, ...], Callable]] = {},
     preserve_order: bool = False,
 ) -> str: ...
