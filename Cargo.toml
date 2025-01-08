@@ -20,7 +20,7 @@ jrsonnet-evaluator = { version = "0.5.0-pre95", features = ["exp-preserve-order"
 jrsonnet-parser = { version = "0.5.0-pre95" }
 jrsonnet-stdlib = { version = "0.5.0-pre95", features = ["exp-preserve-order"] }
 jrsonnet-gcmodule = "0.3.6"
-pyo3 = { version = "0.21.1", features = ["abi3-py37", "extension-module"] }
+pyo3 = { version = "0.23.3", features = ["abi3-py38", "extension-module"] }
 
 [features]
 default = []
