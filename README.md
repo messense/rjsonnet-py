@@ -51,6 +51,10 @@ rjsonnet.evaluate_file("filename.jsonnet")
 
 # evalute a jsonnet code snippet
 rjsonnet.evaluate_snippet('filename', 'jsonnet code snippet')
+
+# Collect cyclic garbage in current thread created by jrsonnet
+# to avoid memory leak
+rjsonnet.gc()
 ```
 
 ## License

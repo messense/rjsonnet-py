@@ -458,11 +458,18 @@ fn evaluate_snippet(
     Ok(result)
 }
 
+/// Collect cyclic garbage in current thread created by jrsonnet
+#[pyfunction]
+fn gc() {
+    jrsonnet_gcmodule::collect_thread_cycles();
+}
+
 /// Python bindings to Rust jrsonnet crate
 #[pymodule]
 fn rjsonnet(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add("__version__", env!("CARGO_PKG_VERSION"))?;
     m.add_function(wrap_pyfunction!(evaluate_file, m)?)?;
     m.add_function(wrap_pyfunction!(evaluate_snippet, m)?)?;
+    m.add_function(wrap_pyfunction!(gc, m)?)?;
     Ok(())
 }
