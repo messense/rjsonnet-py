@@ -34,6 +34,7 @@ Keyword arguments to these functions are used to control the virtual machine. Th
 * `import_callback`   (see example in [tests/](./tests/))
 * `native_callbacks`   (see example in [tests/](./tests/))
 * `preserve_order`   (bool, preserve object field order during manifestification)
+* `gc`  (bool, default: `True`, run garbage collection automatically)
 
 The argument `import_callback` can be used to pass a callable, to trap the Jsonnet `import` and `importstr` constructs.
 This allows, e.g., reading files out of archives or implementing library search paths.
@@ -53,7 +54,8 @@ rjsonnet.evaluate_file("filename.jsonnet")
 rjsonnet.evaluate_snippet('filename', 'jsonnet code snippet')
 
 # Collect cyclic garbage in current thread created by jrsonnet
-# to avoid memory leak
+# to avoid memory leak, it's not necessary to call this function
+# unless you have passed `gc=False` to `evaluate_file` or `evaluate_snippet`
 rjsonnet.gc()
 ```
 

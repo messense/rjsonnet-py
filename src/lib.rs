@@ -366,6 +366,7 @@ impl LibraryPath {
     import_callback = None,
     native_callbacks = HashMap::new(),
     preserve_order = false,
+    gc = true,
 ))]
 fn evaluate_file(
     py: Python,
@@ -382,6 +383,7 @@ fn evaluate_file(
     import_callback: Option<PyObject>,
     native_callbacks: HashMap<String, (PyObject, PyObject)>,
     preserve_order: bool,
+    gc: bool,
 ) -> PyResult<String> {
     let vm = VirtualMachine::new(
         py,
@@ -399,8 +401,11 @@ fn evaluate_file(
 
     let result = vm
         .evaluate_file(filename)
-        .map_err(|e| vm.error_to_pyerr(py, &e))?;
-    Ok(result)
+        .map_err(|e| vm.error_to_pyerr(py, &e));
+    if gc {
+        jrsonnet_gcmodule::collect_thread_cycles();
+    }
+    Ok(result?)
 }
 
 /// Evaluate jsonnet code snippet
@@ -420,6 +425,7 @@ fn evaluate_file(
     import_callback = None,
     native_callbacks = HashMap::new(),
     preserve_order = false,
+    gc = true,
 ))]
 fn evaluate_snippet(
     py: Python,
@@ -437,6 +443,7 @@ fn evaluate_snippet(
     import_callback: Option<PyObject>,
     native_callbacks: HashMap<String, (PyObject, PyObject)>,
     preserve_order: bool,
+    gc: bool,
 ) -> PyResult<String> {
     let vm = VirtualMachine::new(
         py,
@@ -454,8 +461,11 @@ fn evaluate_snippet(
 
     let result = vm
         .evaluate_snippet(filename, src)
-        .map_err(|e| vm.error_to_pyerr(py, &e))?;
-    Ok(result)
+        .map_err(|e| vm.error_to_pyerr(py, &e));
+    if gc {
+        jrsonnet_gcmodule::collect_thread_cycles();
+    }
+    Ok(result?)
 }
 
 /// Collect cyclic garbage in current thread created by jrsonnet
