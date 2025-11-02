@@ -32,7 +32,7 @@ jobs:
           pip install pytest
           cd tests && pytest
       - name: Upload wheels
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: wheels-macos
           path: dist
@@ -60,7 +60,7 @@ jobs:
           pip install pytest
           cd tests && pytest
       - name: Upload wheels
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: wheels-windows-${{ matrix.target }}
           path: dist
@@ -89,7 +89,7 @@ jobs:
         pip install pytest
         cd tests && pytest
     - name: Upload wheels
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: wheels-linux-${{ matrix.target }}
         path: dist
@@ -126,7 +126,7 @@ jobs:
           pip3 install rjsonnet --no-index --find-links dist/ --force-reinstall
           cd tests && pytest
     - name: Upload wheels
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: wheels-linux-${{ matrix.target }}
         path: dist
@@ -165,7 +165,7 @@ jobs:
           pip install rjsonnet --no-index --find-links /io/dist/ --force-reinstall
           cd tests && python3 -m pytest
     - name: Upload wheels
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: wheels-${{ matrix.target }}
         path: dist
@@ -206,7 +206,7 @@ jobs:
           pip install rjsonnet --no-index --find-links dist/ --force-reinstall
           cd tests && python3 -m pytest
     - name: Upload wheels
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: wheels-${{ matrix.platform.target }}
         path: dist
