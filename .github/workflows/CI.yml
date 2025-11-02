@@ -12,7 +12,7 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: 3.9
       - uses: dtolnay/rust-toolchain@nightly
@@ -44,7 +44,7 @@ jobs:
         target: [x64, x86]
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: 3.9
           architecture: ${{ matrix.target }}
@@ -72,7 +72,7 @@ jobs:
         target: [x86_64, i686]
     steps:
     - uses: actions/checkout@v4
-    - uses: actions/setup-python@v5
+    - uses: actions/setup-python@v6
       with:
         python-version: 3.9
     - name: Build wheels
@@ -101,7 +101,7 @@ jobs:
         target: [aarch64, armv7, s390x, ppc64le]
     steps:
     - uses: actions/checkout@v4
-    - uses: actions/setup-python@v5
+    - uses: actions/setup-python@v6
       with:
         python-version: 3.9
     - name: Build wheels
@@ -140,7 +140,7 @@ jobs:
           - i686-unknown-linux-musl
     steps:
     - uses: actions/checkout@v4
-    - uses: actions/setup-python@v5
+    - uses: actions/setup-python@v6
       with:
         python-version: 3.9
         architecture: x64
@@ -181,7 +181,7 @@ jobs:
             arch: armv7
     steps:
     - uses: actions/checkout@v4
-    - uses: actions/setup-python@v5
+    - uses: actions/setup-python@v6
       with:
         python-version: 3.9
     - name: Build wheels
@@ -221,7 +221,7 @@ jobs:
         with:
           pattern: wheels-*
           merge-multiple: true
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: 3.12
       - name: Publish to PyPI
